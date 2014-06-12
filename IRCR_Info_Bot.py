@@ -9,7 +9,7 @@ import urlparse
 
 # load database lib
 PG = False
-if "--pg" in sys.argv or "-p" in sys.argv:
+if "--postgres" in sys.argv or "-p" in sys.argv:
     try:
         import psycopg2
         PG = True
