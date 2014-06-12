@@ -18,9 +18,9 @@ USERAGENT = "/r/ircr info bot"
 #This is the sub or list of subs to scan for new posts. For a single sub, use "sub1". For multiple subreddits, use "sub1+sub2+sub3+..."
 SUBREDDIT = "isrconspiracyracist"
 
-NORMALSTRING = ": [previous /r/ircr posts](http://www.reddit.com/r/isrconspiracyracist/search?q=_username_+OR+flair%3A%27_username_%27&restrict_sr=on&sort=relevance&t=all) | [Redective link](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=_username_) | [Redditgraphs link](http://redditgraphs.com/?_username_&PieChart&Number&Submissions)"
-#NORMALSTRING = ": [Submissions](http://reddit.com/u/_username_/submitted) | [Comments](http://reddit.com/u/_username_/comments)"
 #This is the remark that every user gets. _username_ will be replaced by the username automatically
+#NORMALSTRING = ": [Submissions](http://reddit.com/u/_username_/submitted) | [Comments](http://reddit.com/u/_username_/comments)"
+NORMALSTRING = ": [previous /r/ircr posts](http://www.reddit.com/r/isrconspiracyracist/search?q=_username_+OR+flair%3A%27_username_%27&restrict_sr=on&sort=relevance&t=all) | [Redective link](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=_username_) | [Redditgraphs link](http://redditgraphs.com/?_username_&PieChart&Number&Submissions)"
 
 #This is the list of Special Users
 SPECIALS = ["Antiochus88", "European88","Jude_Fetzen911","4to4","4to3","4to2","4too"]
@@ -90,9 +90,9 @@ def scanSub():
         except AttributeError:
             pauthor = '[DELETED]'
         pid = post.id
-        cur.execute('SELECT * FROM oldposts WHERE ID="%s"' % pid)
+        cur.execute('SELECT * FROM oldposts WHERE ID == ?' % (pid,))
         if not cur.fetchone():
-            cur.execute('INSERT INTO oldposts VALUES("%s")' % pid)
+            cur.execute('INSERT INTO oldposts VALUES (?)' % (pid,))
             print(pid)
             result = []
             if TRIGGERSTRING in ptitle:
