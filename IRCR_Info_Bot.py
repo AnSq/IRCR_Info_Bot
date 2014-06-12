@@ -104,7 +104,7 @@ if "--test" in sys.argv or "-t" in sys.argv:
 if TESTMODE:
     print "Running in testing mode. Bot will not post comments."
 else:
-    print "Runnign in live mode. Bot will post comments."
+    print "Running in live mode. Bot will post comments."
 
 
 def query(q):
