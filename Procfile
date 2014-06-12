@@ -1,1 +1,1 @@
-worker: python IRCR_Info_Bot.py --nologin
+worker: python IRCR_Info_Bot.py --test
