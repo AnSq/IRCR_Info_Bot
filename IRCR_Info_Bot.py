@@ -2,10 +2,27 @@
 
 import praw # simple interface to the reddit API, also handles rate limiting of requests
 import time
-import sqlite3
 import string
 import sys
 import os
+import urlparse
+
+# load database lib
+PG = False
+if "--pg" in sys.argv or "-p" in sys.argv:
+    try:
+        import psycopg2
+        PG = True
+    except:
+        import sqlite3
+        PG = False
+else:
+    import sqlite3
+
+if PG:
+    print("Using PostgreSQL")
+else:
+    print("Using SQLite")
 
 # bot does not comment in testing mode
 TESTMODE = False
@@ -16,7 +33,23 @@ from config import *
 #This is the list of characters which are allowed in usernames. Don't change this.
 CHARS = string.digits + string.ascii_letters + '-_'
 
-sql = sqlite3.connect('sql.db')
+# connect to database
+sql = None
+if PG:
+    # https://devcenter.heroku.com/articles/heroku-postgresql#connecting-in-python
+    urlparse.uses_netloc.append("postgres")
+    url = urlparse.urlparse(os.environ["DATABASE_URL"])
+
+    sql = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+    )
+else:
+    sql = sqlite3.connect('sql.db')
+
 print('Loaded SQL Database')
 cur = sql.cursor()
 
@@ -59,6 +92,16 @@ if "--test" in sys.argv or "-t" in sys.argv:
 if TESTMODE:
     print("Running in testing mode. Bot will not post comments.")
 
+
+def query(q):
+    # Stupid hack to get it to work with Postgres with minimal effort.
+    # It only works because there's no non-text columns in the database.
+    if PG:
+        return q.replace("?", "%s")
+    else:
+        return q
+
+
 def scanSub():
     print('Searching '+ SUBREDDIT + '.')
     subreddit = r.get_subreddit(SUBREDDIT)
@@ -70,9 +113,9 @@ def scanSub():
         except AttributeError:
             pauthor = '[DELETED]'
         pid = post.id
-        cur.execute('SELECT * FROM oldposts WHERE ID == ?', (pid,))
+        cur.execute(query('SELECT * FROM oldposts WHERE ID = ?'), (pid,))
         if not cur.fetchone():
-            cur.execute('INSERT INTO oldposts VALUES (?)', (pid,))
+            cur.execute(query('INSERT INTO oldposts VALUES (?)'), (pid,))
             print(pid)
             result = []
             if TRIGGERSTRING in ptitle:

@@ -22,4 +22,6 @@ Use the `--multi` (or `-m`) flag to connect to `praw-multiprocess` if you're run
 
 To not even attempt logging in, use the `--nologin` (or `-n`) flag (implies `--test`).
 
+To use PostgreSQL instead of SQLite use the `--pg` (or `-p`) flag. (Mainly for Heroku.) Requires that a `DATABASE_URL` environment variable be defined in the form `postgres://<username>:<password>@<host>:<port>/<database>`.
+
 The argument parsing isn't all that sophisticated, so, for example, `-mn` is *not* a synonym for `-m -n`.
