@@ -17,3 +17,5 @@ For automatic login, create a file called `auth.py` that looks like this:
 Use the `--test` flag to turn on testing mode. The bot will not post comments in testing mode.
 
 Use the `--multi` flag to connect to `praw-multiprocess` if you're running other reddit bots at the same time. ([More info in the praw docs.](http://praw.readthedocs.org/en/latest/pages/multiprocess.html))
+
+To not even attempt logging in, use the `--nologin` flag (implies `--test`).

@@ -34,17 +34,20 @@ else:
 r = praw.Reddit(USERAGENT, handler=handler)
 
 # login
-try:
-    r.login(USERNAME, PASSWORD)
-except praw.errors.InvalidUserPass as e:
-    print("Wrong password.")
-    cont = "..."
-    while len(cont) != 0 and cont[0].lower() not in "yn":
-        cont = raw_input("Continue in testing mode? [Y/n]: ")
-    if cont == "n":
-        sys.exit()
-    else:
-        TESTMODE = True
+if not "--nologin" in sys.argv:
+    try:
+        r.login(USERNAME, PASSWORD)
+    except praw.errors.InvalidUserPass as e:
+        print("Wrong password.")
+        cont = "..."
+        while len(cont) != 0 and cont[0].lower() not in "yn":
+            cont = raw_input("Continue in testing mode? [Y/n]: ")
+        if cont == "n":
+            sys.exit()
+        else:
+            TESTMODE = True
+else:
+    TESTMODE = True
 
 if "--test" in sys.argv or "-t" in sys.argv:
     TESTMODE = True
