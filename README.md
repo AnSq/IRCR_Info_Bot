@@ -9,12 +9,7 @@ Originally written by [/u/GoldenSights](http://www.reddit.com/user/GoldenSights)
 
 Settings are stored in `config.py`.
 
-For automatic login, create a file called `auth.py` that looks like this:
-
-    USERNAME = "IRCR_Info_Bot"
-    PASSWORD = "BOT-PASSWORD"
-
-If defined, the environment variables `IRCR_USERNAME` and `IRCR_PASSWORD` override these settings.
+The environment variables `IRCR_USERNAME` and `IRCR_PASSWORD` are used to log in.
 
 Use the `--test` (or `-t`) flag to turn on testing mode. The bot will not post comments in testing mode.
 

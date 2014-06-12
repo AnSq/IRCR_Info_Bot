@@ -7,14 +7,6 @@
 VERSION = "1.1"
 
 
-# USERNAME and PASSWORD should be defined in auth.py, which is never made public
-try:
-	from auth import *
-except ImportError:
-	print("Could not import auth.py")
-	TESTMODE = True
-
-
 # short description of what the bot does. For example "/u/GoldenSights' Newsletter bot"
 USERAGENT = "/u/IRCR_Info_Bot v%s, controlled by the moderators of /r/isrconspiracyracist" % VERSION
 

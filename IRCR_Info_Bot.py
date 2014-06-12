@@ -72,7 +72,8 @@ try:
     USERNAME = os.environ["IRCR_USERNAME"]
     PASSWORD = os.environ["IRCR_PASSWORD"]
 except:
-    pass
+    print("No username/password defined.")
+    sys.exit()
 
 # login
 if not "--nologin" in sys.argv and not "-n" in sys.argv:
