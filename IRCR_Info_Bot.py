@@ -1,11 +1,25 @@
 #!/usr/bin/python
 
+
 import praw # simple interface to the reddit API, also handles rate limiting of requests
 import time
 import string
 import sys
 import os
 import urlparse
+
+
+# load settings
+from config import *
+
+
+# startup info
+print USERAGENT
+
+
+# bot does not comment in testing mode
+TESTMODE = False
+
 
 # load database lib
 PG = False
@@ -20,18 +34,14 @@ else:
     import sqlite3
 
 if PG:
-    print("Using PostgreSQL")
+    print "Using PostgreSQL"
 else:
-    print("Using SQLite")
+    print "Using SQLite"
 
-# bot does not comment in testing mode
-TESTMODE = False
-
-# load settings
-from config import *
 
 #This is the list of characters which are allowed in usernames. Don't change this.
 CHARS = string.digits + string.ascii_letters + '-_'
+
 
 # connect to database
 sql = None
@@ -50,48 +60,51 @@ if PG:
 else:
     sql = sqlite3.connect('sql.db')
 
-print('Loaded SQL Database')
+print 'Loaded SQL Database'
 cur = sql.cursor()
-
 cur.execute('CREATE TABLE IF NOT EXISTS oldposts(ID TEXT)')
-print('Loaded Completed table')
-
 sql.commit()
+
 
 # connect to reddit
 handler = None
 if "--multi" in sys.argv or "-m" in sys.argv:
     handler = praw.handlers.MultiprocessHandler()
-    print("Connecting to praw-multiprocess")
+    print "Connecting to praw-multiprocess"
 else:
     handler = praw.handlers.DefaultHandler()
 r = praw.Reddit(USERAGENT, handler=handler)
 
-# attempt to load uname/pass from environment
-try:
-    USERNAME = os.environ["IRCR_USERNAME"]
-    PASSWORD = os.environ["IRCR_PASSWORD"]
-except:
-    print("No username/password defined.")
-    sys.exit()
 
 # login
 if not "--nologin" in sys.argv and not "-n" in sys.argv:
+    # attempt to load uname/pass from environment
+    try:
+        USERNAME = os.environ["IRCR_USERNAME"]
+        PASSWORD = os.environ["IRCR_PASSWORD"]
+    except:
+        print "No username/password defined."
+        sys.exit()
+
     try:
         r.login(USERNAME, PASSWORD)
-        print("Logged in as /u/" + USERNAME)
+        print "Logged in as /u/" + USERNAME
     except praw.errors.InvalidUserPass as e:
-        print("Wrong password. Continuing in testing mode.")
+        print "Wrong password. Continuing in testing mode."
         TESTMODE = True
 else:
-    print("Not logging in.")
+    print "Not logging in."
     TESTMODE = True
+
 
 if "--test" in sys.argv or "-t" in sys.argv:
     TESTMODE = True
 
+
 if TESTMODE:
-    print("Running in testing mode. Bot will not post comments.")
+    print "Running in testing mode. Bot will not post comments."
+else:
+    print "Runnign in live mode. Bot will post comments."
 
 
 def query(q):
@@ -104,7 +117,7 @@ def query(q):
 
 
 def scanSub():
-    print('Searching '+ SUBREDDIT + '.')
+    #print 'Searching '+ SUBREDDIT + '.'
     subreddit = r.get_subreddit(SUBREDDIT)
     posts = subreddit.get_new(limit=MAXPOSTS)
     for post in posts:
@@ -117,16 +130,16 @@ def scanSub():
         cur.execute(query('SELECT * FROM oldposts WHERE ID = ?'), (pid,))
         if not cur.fetchone():
             cur.execute(query('INSERT INTO oldposts VALUES (?)'), (pid,))
-            print(pid)
+            print "\n\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)
             result = []
             if TRIGGERSTRING in ptitle:
                 ptitlesplit = ptitle.split(' ')
                 for word in ptitlesplit:
                     if TRIGGERSTRING in word:
-                        print(word)
                         word = word.replace(TRIGGERSTRING, '')
                         word = ''.join(c for c in word if c in CHARS)
                         finalword = TRIGGERSTRING + word
+                        print "|\t" + finalword
 
                         try:
                             user = r.get_redditor(word, fetch=True)
@@ -134,26 +147,26 @@ def scanSub():
                             finalword += NORMALSTRING.replace('_username_', word)
                         except Exception:
                             finalword += DEADUSER.replace('_username_', word)
-                            print('\tDead')
+                            print '|\t\tDead'
 
                         for name in SPECIALS.keys():
                             if name.lower() == word.lower():
-                                print('\tSpecial')
+                                print '|\t\tSpecial'
                                 finalword += SPECIALS[name].replace('_username_', word)
 
                         result.append(finalword)
             if len(result) > 0:
                 final = HEADER + '\n\n- '.join(result) + FOOTER
                 if not TESTMODE:
-                    print('Creating comment.')
+                    print '| Creating comment.'
                     newcomment = post.add_comment(final)
                     if DISTINGUISHCOMMENT == True:
-                        print('Distinguishing Comment.')
+                        print '| Distinguishing Comment.'
                         newcomment.distinguish()
                 else:
-                    print("Comment not created (bot is running in testing mode).")
+                    print "| Comment not created (bot is running in testing mode)."
             else:
-                print('\tNone!')
+                print '| \tNo users mentioned in post title.'
         sql.commit()
 
 
@@ -161,7 +174,7 @@ while True:
     try:
         scanSub()
     except Exception as e:
-        print('An error has occured:', str(e))
-    print('Running again in %d seconds \n' % WAIT)
+        print 'An error has occured:', str(e)
+    #print 'Running again in %d seconds' % WAIT
     sql.commit()
     time.sleep(WAIT)
