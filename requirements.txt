@@ -1,5 +1,5 @@
 argparse==1.2.1
-setuptools==4.0.1
+setuptools==3.6
 praw==2.1.16
 requests==2.3.0
 six==1.7.2
