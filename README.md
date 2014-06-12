@@ -1,5 +1,5 @@
 /u/IRCR_Info_Bot
-=============
+================
 
 [/u/IRCR_Info_Bot](http://www.reddit.com/user/IRCR_Info_Bot) on [/r/isrconspiracyracist](http://www.reddit.com/r/isrconspiracyracist).
 
@@ -14,8 +14,12 @@ For automatic login, create a file called `auth.py` that looks like this:
     USERNAME = "IRCR_Info_Bot"
     PASSWORD = "BOT-PASSWORD"
 
-Use the `--test` flag to turn on testing mode. The bot will not post comments in testing mode.
+If defined, the environment variables `IRCR_USERNAME` and `IRCR_PASSWORD` override these settings.
 
-Use the `--multi` flag to connect to `praw-multiprocess` if you're running other reddit bots at the same time. ([More info in the praw docs.](http://praw.readthedocs.org/en/latest/pages/multiprocess.html))
+Use the `--test` (or `-t`) flag to turn on testing mode. The bot will not post comments in testing mode.
 
-To not even attempt logging in, use the `--nologin` flag (implies `--test`).
+Use the `--multi` (or `-m`) flag to connect to `praw-multiprocess` if you're running other reddit bots at the same time. ([More info in the praw docs.](http://praw.readthedocs.org/en/latest/pages/multiprocess.html))
+
+To not even attempt logging in, use the `--nologin` (or `-n`) flag (implies `--test`).
+
+The argument parsing isn't all that sophisticated, so, for example, `-mn` is *not* a synonym for `-m -n`.

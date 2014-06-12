@@ -5,6 +5,7 @@ import time
 import sqlite3
 import string
 import sys
+import os
 
 # bot does not comment in testing mode
 TESTMODE = False
@@ -33,20 +34,23 @@ else:
     handler = praw.handlers.DefaultHandler()
 r = praw.Reddit(USERAGENT, handler=handler)
 
+# attempt to load uname/pass from environment
+try:
+    USERNAME = os.environ["IRCR_USERNAME"]
+    PASSWORD = os.environ["IRCR_PASSWORD"]
+except:
+    pass
+
 # login
-if not "--nologin" in sys.argv:
+if not "--nologin" in sys.argv and not "-n" in sys.argv:
     try:
         r.login(USERNAME, PASSWORD)
+        print("Logged in as /u/" + USERNAME)
     except praw.errors.InvalidUserPass as e:
-        print("Wrong password.")
-        cont = "..."
-        while len(cont) != 0 and cont[0].lower() not in "yn":
-            cont = raw_input("Continue in testing mode? [Y/n]: ")
-        if cont == "n":
-            sys.exit()
-        else:
-            TESTMODE = True
+        print("Wrong password. Continuing in testing mode.")
+        TESTMODE = True
 else:
+    print("Not logging in.")
     TESTMODE = True
 
 if "--test" in sys.argv or "-t" in sys.argv:
