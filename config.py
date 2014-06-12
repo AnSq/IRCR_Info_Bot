@@ -57,7 +57,7 @@ HEADER = "More information about these users:\n\n#####&#009;\n\n######&#009;\n\n
 
 
 # This will be at the very bottom of the comment. Set to "" if you don't want anything.
-FOOTER = "\n\n####&#009;\n\n#####&#009;\n\n###&#009;\n\n*This was done by a bot. Contact the [moderators](http://www.reddit.com/message/compose?to=%2Fr%2Fisrconspiracyracist) or [author](http://reddit.com/u/GoldenSights) if there is a problem.*"
+FOOTER = "\n\n####&#009;\n\n#####&#009;\n\n###&#009;\n\n*[I am a bot](https://github.com/AnSq/IRCR_Info_Bot). Contact the [moderators](http://www.reddit.com/message/compose?to=%2Fr%2Fisrconspiracyracist) if there is a problem.*"
 
 
 # If your bot is a moderator, you can distinguish the comment. Use True or False (Use capitals! No quotations!)
