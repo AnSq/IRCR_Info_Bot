@@ -7,6 +7,7 @@ import string
 import sys
 import os
 import urlparse
+import traceback
 
 
 # load settings
@@ -175,6 +176,7 @@ while True:
         scanSub()
     except Exception as e:
         print 'An error has occured:', str(e)
+        traceback.print_exc()
     #print 'Running again in %d seconds' % WAIT
     sql.commit()
     time.sleep(WAIT)
