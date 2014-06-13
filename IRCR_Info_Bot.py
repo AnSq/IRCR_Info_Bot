@@ -129,46 +129,53 @@ def scanSub():
             pauthor = '[DELETED]'
         pid = post.id
         cur.execute(query('SELECT * FROM oldposts WHERE ID = ?'), (pid,))
-        if not cur.fetchone():
-            cur.execute(query('INSERT INTO oldposts VALUES (?)'), (pid,))
-            print u"\n\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)
-            result = []
-            if TRIGGERSTRING in ptitle:
-                ptitlesplit = ptitle.split(' ')
-                for word in ptitlesplit:
-                    if TRIGGERSTRING in word:
-                        word = word.replace(TRIGGERSTRING, '')
-                        word = ''.join(c for c in word if c in CHARS)
-                        finalword = TRIGGERSTRING + word
-                        print "|\t" + finalword
+        try:
+            if not cur.fetchone():
+                cur.execute(query('INSERT INTO oldposts VALUES (?)'), (pid,))
+                print ptitle
+                print pid
+                print pauthor
+                print (u"\n\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("utf-8")
+                result = []
+                if TRIGGERSTRING in ptitle:
+                    ptitlesplit = ptitle.split(' ')
+                    for word in ptitlesplit:
+                        if TRIGGERSTRING in word:
+                            word = word.replace(TRIGGERSTRING, '')
+                            word = ''.join(c for c in word if c in CHARS)
+                            finalword = TRIGGERSTRING + word
+                            print "|\t" + finalword
 
-                        try:
-                            user = r.get_redditor(word, fetch=True)
-                            finalword = finalword.replace(word, user.name)
-                            finalword += NORMALSTRING.replace('_username_', word)
-                        except Exception:
-                            finalword += DEADUSER.replace('_username_', word)
-                            print '|\t\tDead'
+                            try:
+                                user = r.get_redditor(word, fetch=True)
+                                finalword = finalword.replace(word, user.name)
+                                finalword += NORMALSTRING.replace('_username_', word)
+                            except Exception:
+                                finalword += DEADUSER.replace('_username_', word)
+                                print '|\t\tDead'
 
-                        for name in SPECIALS.keys():
-                            if name.lower() == word.lower():
-                                print '|\t\tSpecial'
-                                finalword += SPECIALS[name].replace('_username_', word)
+                            for name in SPECIALS.keys():
+                                if name.lower() == word.lower():
+                                    print '|\t\tSpecial'
+                                    finalword += SPECIALS[name].replace('_username_', word)
 
-                        result.append(finalword)
-            if len(result) > 0:
-                final = HEADER + '\n\n- '.join(result) + FOOTER
-                if not TESTMODE:
-                    print '| Creating comment.'
-                    newcomment = post.add_comment(final)
-                    if DISTINGUISHCOMMENT == True:
-                        print '| Distinguishing Comment.'
-                        newcomment.distinguish()
+                            result.append(finalword)
+                if len(result) > 0:
+                    final = HEADER + '\n\n- '.join(result) + FOOTER
+                    if not TESTMODE:
+                        print '| Creating comment.'
+                        newcomment = post.add_comment(final)
+                        if DISTINGUISHCOMMENT == True:
+                            print '| Distinguishing Comment.'
+                            newcomment.distinguish()
+                    else:
+                        print "| Comment not created (bot is running in testing mode)."
                 else:
-                    print "| Comment not created (bot is running in testing mode)."
-            else:
-                print '| \tNo users mentioned in post title.'
-        sql.commit()
+                    print '| \tNo users mentioned in post title.'
+        except:
+            sql.rollback()
+        finally:
+            sql.commit()
 
 
 while True:
