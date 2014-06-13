@@ -61,7 +61,7 @@ TRIGGERSTRING = '/u/'
 
 
 # This is how many posts you want to retrieve all at once. PRAW can download 100 at a time.
-MAXPOSTS = 5
+MAXPOSTS = 10
 
 
 # This is how many seconds you will wait between cycles. The bot is completely inactive during this time.
