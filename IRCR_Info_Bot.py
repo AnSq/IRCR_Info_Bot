@@ -130,13 +130,9 @@ def scanSub():
         pid = post.id
         cur.execute(query('SELECT * FROM oldposts WHERE ID = ?'), (pid,))
         try:
-            print "* " + pid
             if not cur.fetchone():
                 cur.execute(query('INSERT INTO oldposts VALUES (?)'), (pid,))
-                print ptitle
-                print pid
-                print pauthor
-                print (u"\n\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("utf-8")
+                print (u"\n\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("ascii", "backslashreplace")
                 result = []
                 if TRIGGERSTRING in ptitle:
                     ptitlesplit = ptitle.split(' ')
