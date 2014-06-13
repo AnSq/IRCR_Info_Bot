@@ -130,6 +130,7 @@ def scanSub():
         pid = post.id
         cur.execute(query('SELECT * FROM oldposts WHERE ID = ?'), (pid,))
         try:
+            print "* " + pid
             if not cur.fetchone():
                 cur.execute(query('INSERT INTO oldposts VALUES (?)'), (pid,))
                 print ptitle
