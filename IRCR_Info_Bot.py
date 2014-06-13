@@ -175,6 +175,7 @@ def scanSub():
                     print '| \tNo users mentioned in post title.'
         except:
             sql.rollback()
+            raise
         finally:
             sql.commit()
 
