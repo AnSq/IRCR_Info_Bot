@@ -244,8 +244,10 @@ def main(r, sql, cur, pg, testmode):
         try:
             scanSub(r, sql, cur, pg, testmode)
         except Exception as e:
-            print 'An error has occured:', str(e)
+            print '\nAn error has occured:', str(e)
+            print "--------------------------------"
             traceback.print_exc()
+            print "--------------------------------\n"
         #print 'Running again in %d seconds' % config.WAIT
         sql.commit()
         time.sleep(config.WAIT)
