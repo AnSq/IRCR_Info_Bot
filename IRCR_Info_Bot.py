@@ -189,6 +189,23 @@ def make_comment(remarks):
     return config.HEADER + '\n\n- '.join(remarks) + config.FOOTER
 
 
+def title_to_comment(ptitle, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
+    # default reddit instance provided for convenience in terminal. Don't use it in scripts.
+
+    names = list(scan_title(ptitle))
+    names.sort()
+
+    remarks = []
+    for name in names:
+        remarks.append(make_info(name, r, p))
+
+    num_names = len(names)
+    comment = make_comment(remarks)
+    print comment
+
+    return (num_names, comment)
+
+
 def post_comment(post, comment, testmode):
     if not testmode:
         print "| Posting comment..."
@@ -198,7 +215,8 @@ def post_comment(post, comment, testmode):
             newcomment.distinguish()
             print '| Comment distinguished.'
     else:
-        print "| Comment not created (bot is running in testing mode)."
+        print "| Comment not posted (bot is running in testing mode)."
+    print
 
 
 def scanSub(r, sql, cur, pg, testmode):
@@ -219,17 +237,12 @@ def scanSub(r, sql, cur, pg, testmode):
         try:
             if not cur.fetchone():
                 cur.execute(query('INSERT INTO oldposts VALUES (?)', pg), (pid,))
-                print (u"\n\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("ascii", "backslashreplace")
+                print (u"\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("ascii", "backslashreplace")
 
-                names = list(scan_title(ptitle))
-                names.sort()
+                num_names, comment = title_to_comment(ptitle, r, True)
 
-                remarks = []
-                for name in names:
-                    remarks.append(make_info(name, r, True))
-
-                if len(remarks) > 0:
-                    post_comment(post, make_comment(remarks), testmode)
+                if num_names > 0:
+                    post_comment(post, comment, testmode)
                 else:
                     print '| \tNo users mentioned in post title.'
         except:
