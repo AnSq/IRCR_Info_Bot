@@ -138,7 +138,6 @@ def setup():
 
 def query(q, pg=False):
     # Stupid hack to get it to work with Postgres with minimal effort.
-    # It only works because there's no non-text columns in the database.
     if pg:
         return q.replace("?", "%s")
     else:
@@ -192,11 +191,12 @@ def make_comment(remarks):
 
 def post_comment(post, comment, testmode):
     if not testmode:
-        print '| Creating comment.'
+        print "| Posting comment..."
         newcomment = post.add_comment(comment)
+        print '| Comment posted.'
         if config.DISTINGUISHCOMMENT:
-            print '| Distinguishing Comment.'
             newcomment.distinguish()
+            print '| Comment distinguished.'
     else:
         print "| Comment not created (bot is running in testing mode)."
 
