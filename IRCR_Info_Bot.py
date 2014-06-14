@@ -136,7 +136,6 @@ def setup():
     return (r, sql, cur, pg, testmode)
 
 
-
 def query(q, pg=False):
     # Stupid hack to get it to work with Postgres with minimal effort.
     # It only works because there's no non-text columns in the database.
@@ -154,7 +153,7 @@ def make_info(username, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
 
     try:
         user = r.get_redditor(username, fetch=True)
-        info = info.replace(username, user.name)
+        info = info.replace(username, user.name) # standardize capitalization
         info += config.NORMALSTRING.replace('_username_', username)
     except Exception:
         info += config.DEADUSER.replace('_username_', username)
@@ -166,6 +165,40 @@ def make_info(username, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
             info += config.SPECIALS[name].replace('_username_', username)
 
     return info
+
+
+def scan_title(title):
+    users = set()
+    CHARS = string.digits + string.ascii_letters + '-_'
+    index = title.find(config.TRIGGERSTRING)
+    while index != -1:
+        start = index + len(config.TRIGGERSTRING)
+        end = start
+
+        if end < len(title):
+            while title[end] in CHARS:
+                end += 1
+
+            users.add(title[start:end])
+
+        title = title[start:]
+        index = title.find(config.TRIGGERSTRING)
+    return users
+
+
+def make_comment(remarks):
+    return config.HEADER + '\n\n- '.join(remarks) + config.FOOTER
+
+
+def post_comment(comment, testmode):
+    if not testmode:
+        print '| Creating comment.'
+        newcomment = post.add_comment(comment)
+        if config.DISTINGUISHCOMMENT:
+            print '| Distinguishing Comment.'
+            newcomment.distinguish()
+    else:
+        print "| Comment not created (bot is running in testing mode)."
 
 
 def scanSub(r, sql, cur, pg, testmode):
@@ -180,31 +213,23 @@ def scanSub(r, sql, cur, pg, testmode):
         try:
             pauthor = post.author.name
         except AttributeError:
-            pauthor = '[DELETED]'
+            pauthor = '[deleted]'
         pid = post.id
         cur.execute(query('SELECT * FROM oldposts WHERE ID = ?', pg), (pid,))
         try:
             if not cur.fetchone():
                 cur.execute(query('INSERT INTO oldposts VALUES (?)', pg), (pid,))
                 print (u"\n\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("ascii", "backslashreplace")
-                result = []
-                if config.TRIGGERSTRING in ptitle:
-                    ptitlesplit = ptitle.split(' ')
-                    for word in ptitlesplit:
-                        if config.TRIGGERSTRING in word:
-                            word = word.replace(config.TRIGGERSTRING, '')
-                            word = ''.join(c for c in word if c in CHARS)
-                            result.append(make_info(word, r, True))
-                if len(result) > 0:
-                    final = config.HEADER + '\n\n- '.join(result) + config.FOOTER
-                    if not testmode:
-                        print '| Creating comment.'
-                        newcomment = post.add_comment(final)
-                        if config.DISTINGUISHCOMMENT == True:
-                            print '| Distinguishing Comment.'
-                            newcomment.distinguish()
-                    else:
-                        print "| Comment not created (bot is running in testing mode)."
+
+                names = list(scan_title(ptitle))
+                names.sort()
+
+                remarks = []
+                for name in names:
+                    remarks.append(make_info(name, r, True))
+
+                if len(remarks) > 0:
+                    post_comment(make_comment(remarks), testmode)
                 else:
                     print '| \tNo users mentioned in post title.'
         except:
