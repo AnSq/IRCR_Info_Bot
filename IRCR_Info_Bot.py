@@ -146,6 +146,28 @@ def query(q, pg=False):
         return q
 
 
+def make_info(username, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
+    # default reddit instance provided for convenience in terminal. Don't use it in scripts.
+
+    info = config.TRIGGERSTRING + username
+    if p: print "|\t" + info
+
+    try:
+        user = r.get_redditor(username, fetch=True)
+        info = info.replace(username, user.name)
+        info += config.NORMALSTRING.replace('_username_', username)
+    except Exception:
+        info += config.DEADUSER.replace('_username_', username)
+        if p: print '|\t\tDead'
+
+    for name in config.SPECIALS.keys():
+        if name.lower() == username.lower():
+            if p: print '|\t\tSpecial'
+            info += config.SPECIALS[name].replace('_username_', username)
+
+    return info
+
+
 def scanSub(r, sql, cur, pg, testmode):
     #list of characters which are allowed in usernames
     CHARS = string.digits + string.ascii_letters + '-_'
@@ -172,23 +194,7 @@ def scanSub(r, sql, cur, pg, testmode):
                         if config.TRIGGERSTRING in word:
                             word = word.replace(config.TRIGGERSTRING, '')
                             word = ''.join(c for c in word if c in CHARS)
-                            finalword = config.TRIGGERSTRING + word
-                            print "|\t" + finalword
-
-                            try:
-                                user = r.get_redditor(word, fetch=True)
-                                finalword = finalword.replace(word, user.name)
-                                finalword += config.NORMALSTRING.replace('_username_', word)
-                            except Exception:
-                                finalword += config.DEADUSER.replace('_username_', word)
-                                print '|\t\tDead'
-
-                            for name in config.SPECIALS.keys():
-                                if name.lower() == word.lower():
-                                    print '|\t\tSpecial'
-                                    finalword += config.SPECIALS[name].replace('_username_', word)
-
-                            result.append(finalword)
+                            result.append(make_info(word, r, True))
                 if len(result) > 0:
                     final = config.HEADER + '\n\n- '.join(result) + config.FOOTER
                     if not testmode:
