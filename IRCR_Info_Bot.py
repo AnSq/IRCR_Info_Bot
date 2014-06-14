@@ -190,7 +190,7 @@ def make_comment(remarks):
     return config.HEADER + '\n\n- '.join(remarks) + config.FOOTER
 
 
-def post_comment(comment, testmode):
+def post_comment(post, comment, testmode):
     if not testmode:
         print '| Creating comment.'
         newcomment = post.add_comment(comment)
@@ -229,7 +229,7 @@ def scanSub(r, sql, cur, pg, testmode):
                     remarks.append(make_info(name, r, True))
 
                 if len(remarks) > 0:
-                    post_comment(make_comment(remarks), testmode)
+                    post_comment(post, make_comment(remarks), testmode)
                 else:
                     print '| \tNo users mentioned in post title.'
         except:
