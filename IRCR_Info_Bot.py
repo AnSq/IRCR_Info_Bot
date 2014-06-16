@@ -150,13 +150,23 @@ def make_info(username, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
     info = config.TRIGGERSTRING + username
     if p: print "|\t" + info
 
-    try:
-        user = r.get_redditor(username, fetch=True)
-        info = info.replace(username, user.name) # standardize capitalization
-        info += config.NORMALSTRING.replace('_username_', username)
-    except Exception:
-        info += config.DEADUSER.replace('_username_', username)
-        if p: print '|\t\tDead'
+    while True:
+        try:
+            user = r.get_redditor(username, fetch=True)
+            info = info.replace(username, user.name) # standardize capitalization
+            info += config.NORMALSTRING.replace('_username_', username)
+            break
+        except Exception as e:
+            if type(e).__name__ == "HTTPError" and str(e)[:3] == "404":
+                # A 404 error means the user was deleted or banned
+                info += config.DEADUSER.replace('_username_', username)
+                if p: print '|\t\tDead'
+                break
+            else:
+                # Any other error (notably a 504) means we should try again to get the user
+                print "Error getting user: %s: %s" % (type(e).__name__, str(e))
+                time.sleep(2)
+                continue
 
     for name in config.SPECIALS.keys():
         if name.lower() == username.lower():
@@ -201,7 +211,7 @@ def title_to_comment(ptitle, r=praw.Reddit(config.USERAGENT + " (manual mode)"),
 
     num_names = len(names)
     comment = make_comment(remarks)
-    print comment
+    #print comment
 
     return (num_names, comment)
 
@@ -244,7 +254,7 @@ def scanSub(r, sql, cur, pg, testmode):
                 if num_names > 0:
                     post_comment(post, comment, testmode)
                 else:
-                    print '| \tNo users mentioned in post title.'
+                    print '| \tNo users mentioned in post title.\n'
         except:
             sql.rollback()
             raise
@@ -257,10 +267,12 @@ def main(r, sql, cur, pg, testmode):
         try:
             scanSub(r, sql, cur, pg, testmode)
         except Exception as e:
-            print '\nAn error has occured:', str(e)
-            print "--------------------------------"
-            traceback.print_exc()
-            print "--------------------------------\n"
+            print '\n*** ERROR: %s: %s' % (type(e).__name__, str(e))
+            if not (type(e).__name__ == "HTTPError" and str(e)[:3] == "504"):
+                # It gets so many 504s on Heroku and I don't want to hear about it.
+                print "--------------------------------"
+                traceback.print_exc()
+                print "--------------------------------\n"
         #print 'Running again in %d seconds' % config.WAIT
         sql.commit()
         time.sleep(config.WAIT)
