@@ -110,7 +110,7 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)")):
             try:
                 ml = r.get_subreddit(sub).get_moderators()
                 break
-            except HTTPException as e:
+            except HTTPError as e:
                 if str(e)[:3] == "504":
                     continue
                 else:
