@@ -44,7 +44,7 @@ SPECIALS["4too"] = SPECIALS["4to4"]
 
 
 # list of subreddits to add special remarks to mods of
-SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "WhiteRightsUK", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower"]
+SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "WhiteRightsUK", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi"]
 
 
 # extra remark that mods of subs in SPECIAL_MOD_SUBS get.
