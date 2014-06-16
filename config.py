@@ -33,17 +33,24 @@ SPECIALS = {
 
 "4to4"
 	: " | [**IRCR search with all aliases**](http://www.reddit.com/r/isrconspiracyracist/search?q=4to4+OR+4to3+OR+4to2+OR+4too+OR+flair%3A%274to4%27+OR+flair%3A%274to3%27+OR+flair%3A%274to2%27OR+flair%3A%274too%27&restrict_sr=on&sort=relevance&t=all) | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
+
+"SovereignMan"
+	: " | Former moderator of /rconspiracy",
 }
 # duplicate for 4to4 aliases
 SPECIALS["4to3"] = SPECIALS["4to4"]
 SPECIALS["4to2"] = SPECIALS["4to4"]
 SPECIALS["4too"] = SPECIALS["4to4"]
 
-# list of subreddits to add special remarks to mods of
-SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime"]
 
-# extra remark that mods of subs in SPECIAL_MOD_SUBS get. _subreddit_ replaced with subreddit name (no /r/) automatically (and _username_)
-MOD_REMARK = " | /r/_subreddit_ mod"
+# list of subreddits to add special remarks to mods of
+SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "WhiteRightsUK", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower"]
+
+
+# extra remark that mods of subs in SPECIAL_MOD_SUBS get.
+# _sublist_ replaced with list of modded subs (e.g., "/r/pics, /r/funny, and /r/conspiracy")
+MOD_REMARK = " | Moderator of _sublist_"
+
 
 # remark for accounts which are invalid or shadowbanned. _username_ will be replaced by the username automatically
 DEADUSER = ": [previous /r/ircr posts](http://www.reddit.com/r/isrconspiracyracist/search?q=_username_+OR+flair%3A%27_username_%27&restrict_sr=on&sort=relevance&t=all) | Account shadowbanned/deleted"

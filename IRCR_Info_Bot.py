@@ -182,6 +182,16 @@ def query(q, pg=False):
         return q
 
 
+def make_sublist(subs):
+    result = ""
+    for i in range(0, len(subs)):
+        if i < len(subs)-1:
+            result += "/r/%s, " % subs[i]
+        else:
+            result += "and /r/%s" % subs[i]
+    return result
+
+
 def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
     """Generate remark for a user.
     default reddit instance provided for convenience in terminal. Don't use it in scripts."""
@@ -215,8 +225,7 @@ def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual 
         name = username.lower()
         subs = mod_list[name]
         if p: print "|\t\tMod " + str(subs)
-        for sub in subs:
-            info += config.MOD_REMARK.replace("_subreddit_", sub).replace("_username_", username)
+        info += config.MOD_REMARK.replace("_sublist_", make_sublist(subs))
 
     return info
 
