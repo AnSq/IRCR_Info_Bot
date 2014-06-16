@@ -183,6 +183,12 @@ def query(q, pg=False):
 
 
 def make_sublist(subs):
+    if len(subs) == 1:
+        return "/r/%s" % subs[0]
+
+    if len(subs) == 2:
+        return "/r/%s and /r/%s" % (subs[0], subs[1])
+
     result = ""
     for i in range(0, len(subs)):
         if i < len(subs)-1:
