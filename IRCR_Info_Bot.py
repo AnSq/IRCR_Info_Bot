@@ -265,7 +265,7 @@ def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (ma
     """generate a comment from a post title"""
     # default reddit instance provided for convenience in terminal. Don't use it in scripts.
 
-    names = list(scan_title(ptitle))
+    names = [n.lower() for n in scan_title(ptitle)]
     names.sort()
 
     remarks = []
