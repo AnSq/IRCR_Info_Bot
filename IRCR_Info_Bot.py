@@ -15,7 +15,7 @@ import config
 
 
 def load_db_lib(pg):
-    # load database lib
+    """load correct database library"""
     if pg:
         try:
             global psycopg2
@@ -34,7 +34,7 @@ def load_db_lib(pg):
 
 
 def db_connect(pg):
-    # connect to database
+    """connect to the database"""
     sql = None
     if pg:
         # https://devcenter.heroku.com/articles/heroku-postgresql#connecting-in-python
@@ -56,6 +56,7 @@ def db_connect(pg):
 
 
 def load_db(sql):
+    """initialize the database and return a cursor"""
     cur = sql.cursor()
     cur.execute('CREATE TABLE IF NOT EXISTS oldposts(ID TEXT)')
     sql.commit()
@@ -63,6 +64,7 @@ def load_db(sql):
 
 
 def reddit_connect(useragent, multi):
+    """connect to reddit"""
     # connect to reddit
     handler = None
     if multi:
@@ -75,6 +77,8 @@ def reddit_connect(useragent, multi):
 
 
 def login(r):
+    """log in to reddit"""
+
     testmode = False
 
     # attempt to load uname/pass from environment
@@ -95,9 +99,42 @@ def login(r):
     return testmode
 
 
+def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)")):
+    """returns a map of name to list of subreddits of moderators of the given subs.
+    default reddit instance provided for convenience in terminal. Don't use it in scripts."""
+
+    mod_list = {}
+    for sub in subs:
+        ml = None
+        while True:
+            try:
+                ml = r.get_subreddit(sub).get_moderators()
+                break
+            except HTTPException as e:
+                if str(e)[:3] == "504":
+                    continue
+                else:
+                    raise
+
+        mods = [u.name for u in ml]
+        for name in mods:
+            if name in mod_list:
+                mod_list[name].append(sub)
+            else:
+                mod_list[name] = [sub]
+
+    mod_list = {k.lower():v for k,v in mod_list.items()} #lowercase for easy lookup
+    return mod_list
+
+
 def setup():
+    """initialize program"""
+
     # startup info
     print config.USERAGENT
+
+    # lowercase all usernams for easy lookup
+    config.SPECIALS = {k.lower():v for k,v in config.SPECIALS.items()}
 
     # bot does not comment in testing mode
     testmode = False
@@ -123,6 +160,7 @@ def setup():
         print "Not logging in."
         testmode = True
 
+    mod_list = load_mod_list(config.SPECIAL_MOD_SUBS, r)
 
     if "--test" in sys.argv or "-t" in sys.argv:
         testmode = True
@@ -133,19 +171,20 @@ def setup():
     else:
         print "Running in live mode. Bot will post comments."
 
-    return (r, sql, cur, pg, testmode)
+    return (r, sql, cur, pg, testmode, mod_list)
 
 
 def query(q, pg=False):
-    # Stupid hack to get it to work with Postgres with minimal effort.
+    """Stupid hack to get it to work with Postgres with minimal effort."""
     if pg:
         return q.replace("?", "%s")
     else:
         return q
 
 
-def make_info(username, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
-    # default reddit instance provided for convenience in terminal. Don't use it in scripts.
+def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
+    """Generate remark for a user.
+    default reddit instance provided for convenience in terminal. Don't use it in scripts."""
 
     info = config.TRIGGERSTRING + username
     if p: print "|\t" + info
@@ -168,15 +207,22 @@ def make_info(username, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
                 time.sleep(2)
                 continue
 
-    for name in config.SPECIALS.keys():
-        if name.lower() == username.lower():
-            if p: print '|\t\tSpecial'
-            info += config.SPECIALS[name].replace('_username_', username)
+    if username.lower() in config.SPECIALS:
+        if p: print '|\t\tSpecial'
+        info += config.SPECIALS[username.lower()].replace('_username_', username)
+
+    if username.lower() in mod_list:
+        name = username.lower()
+        subs = mod_list[name]
+        if p: print "|\t\tMod " + str(subs)
+        for sub in subs:
+            info += config.MOD_REMARK.replace("_subreddit_", sub).replace("_username_", username)
 
     return info
 
 
 def scan_title(title):
+    """extract a set of usernames from a string"""
     users = set()
     CHARS = string.digits + string.ascii_letters + '-_'
     index = title.find(config.TRIGGERSTRING)
@@ -196,10 +242,12 @@ def scan_title(title):
 
 
 def make_comment(remarks):
+    """generate a complete comment from a collection of remarks"""
     return config.HEADER + '\n\n- '.join(remarks) + config.FOOTER
 
 
-def title_to_comment(ptitle, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
+def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
+    """generate a comment from a post title"""
     # default reddit instance provided for convenience in terminal. Don't use it in scripts.
 
     names = list(scan_title(ptitle))
@@ -207,20 +255,20 @@ def title_to_comment(ptitle, r=praw.Reddit(config.USERAGENT + " (manual mode)"),
 
     remarks = []
     for name in names:
-        remarks.append(make_info(name, r, p))
+        remarks.append(make_info(name, mod_list, r, p))
 
     num_names = len(names)
     comment = make_comment(remarks)
-    #print comment
 
     return (num_names, comment)
 
 
-def post_comment(post, comment, testmode):
+def post_comment(post, comment, testmode=False):
+    """submit a comment on a post"""
     if not testmode:
         print "| Posting comment..."
         newcomment = post.add_comment(comment)
-        print '| Comment posted.'
+        print '| Comment posted. (http://reddit.com/comments/%s/-/%s)' % (newcomment.link_id[3:], newcomment.id)
         if config.DISTINGUISHCOMMENT:
             newcomment.distinguish()
             print '| Comment distinguished.'
@@ -229,7 +277,9 @@ def post_comment(post, comment, testmode):
     print
 
 
-def scanSub(r, sql, cur, pg, testmode):
+def scanSub(r, sql, cur, pg, testmode, mod_list):
+    """scan post titles and post comments"""
+
     #list of characters which are allowed in usernames
     CHARS = string.digits + string.ascii_letters + '-_'
 
@@ -249,7 +299,7 @@ def scanSub(r, sql, cur, pg, testmode):
                 cur.execute(query('INSERT INTO oldposts VALUES (?)', pg), (pid,))
                 print (u"\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("ascii", "backslashreplace")
 
-                num_names, comment = title_to_comment(ptitle, r, True)
+                num_names, comment = title_to_comment(ptitle, mod_list, r, True)
 
                 if num_names > 0:
                     post_comment(post, comment, testmode)
@@ -262,10 +312,11 @@ def scanSub(r, sql, cur, pg, testmode):
             sql.commit()
 
 
-def main(r, sql, cur, pg, testmode):
+def main(r, sql, cur, pg, testmode, mod_list):
+    """continuously scan and post comments"""
     while True:
         try:
-            scanSub(r, sql, cur, pg, testmode)
+            scanSub(r, sql, cur, pg, testmode, mod_list)
         except Exception as e:
             print '\n*** ERROR: %s: %s' % (type(e).__name__, str(e))
             if not (type(e).__name__ == "HTTPError" and str(e)[:3] == "504"):

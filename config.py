@@ -39,6 +39,11 @@ SPECIALS["4to3"] = SPECIALS["4to4"]
 SPECIALS["4to2"] = SPECIALS["4to4"]
 SPECIALS["4too"] = SPECIALS["4to4"]
 
+# list of subreddits to add special remarks to mods of
+SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights"]
+
+# extra remark that mods of subs in SPECIAL_MOD_SUBS get. _subreddit_ replaced with subreddit name (no /r/) automatically (and _username_)
+MOD_REMARK = " | /r/_subreddit_ mod"
 
 # remark for accounts which are invalid or shadowbanned. _username_ will be replaced by the username automatically
 DEADUSER = ": [previous /r/ircr posts](http://www.reddit.com/r/isrconspiracyracist/search?q=_username_+OR+flair%3A%27_username_%27&restrict_sr=on&sort=relevance&t=all) | Account shadowbanned/deleted"
@@ -65,4 +70,4 @@ MAXPOSTS = 10
 
 
 # This is how many seconds you will wait between cycles. The bot is completely inactive during this time.
-WAIT = 20
+WAIT = 30
