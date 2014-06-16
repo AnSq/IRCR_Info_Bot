@@ -40,7 +40,7 @@ SPECIALS["4to2"] = SPECIALS["4to4"]
 SPECIALS["4too"] = SPECIALS["4to4"]
 
 # list of subreddits to add special remarks to mods of
-SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights"]
+SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust"]
 
 # extra remark that mods of subs in SPECIAL_MOD_SUBS get. _subreddit_ replaced with subreddit name (no /r/) automatically (and _username_)
 MOD_REMARK = " | /r/_subreddit_ mod"
