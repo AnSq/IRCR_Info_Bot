@@ -278,11 +278,12 @@ def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (ma
     return (num_names, comment)
 
 
-def post_comment(post, comment, testmode=False):
+def post_comment(post, comment, sql, testmode=False):
     """submit a comment on a post"""
     if not testmode:
         print "| Posting comment..."
         newcomment = post.add_comment(comment)
+        sql.commit()
         print '| Comment posted. (http://reddit.com/comments/%s/-/%s)' % (newcomment.link_id[3:], newcomment.id)
         if config.DISTINGUISHCOMMENT:
             newcomment.distinguish()
@@ -317,7 +318,7 @@ def scanSub(r, sql, cur, pg, testmode, mod_list):
                 num_names, comment = title_to_comment(ptitle, mod_list, r, True)
 
                 if num_names > 0:
-                    post_comment(post, comment, testmode)
+                    post_comment(post, comment, sql, testmode)
                 else:
                     print '| \tNo users mentioned in post title.\n'
         except:
