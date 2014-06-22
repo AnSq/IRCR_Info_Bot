@@ -23,19 +23,19 @@ NORMALSTRING = ": [previous /r/ircr posts](http://www.reddit.com/r/isrconspiracy
 # Map of special users to their extra remark. _username_ will be replaced by the username automatically
 SPECIALS = {
 "Antiochus88"
-	: " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fantiochus88)",
+    : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fantiochus88)",
 
 "European88"
-	: " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Feuropean88)",
+    : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Feuropean88)",
 
 "Jude_Fetzen911"
-	: " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fjude_fetzen911)",
+    : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fjude_fetzen911)",
 
 "4to4"
-	: " | [**IRCR search with all aliases**](http://www.reddit.com/r/isrconspiracyracist/search?q=4to4+OR+4to3+OR+4to2+OR+4too+OR+flair%3A%274to4%27+OR+flair%3A%274to3%27+OR+flair%3A%274to2%27OR+flair%3A%274too%27&restrict_sr=on&sort=relevance&t=all) | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
+    : " | [**IRCR search with all aliases**](http://www.reddit.com/r/isrconspiracyracist/search?q=4to4+OR+4to3+OR+4to2+OR+4too+OR+flair%3A%274to4%27+OR+flair%3A%274to3%27+OR+flair%3A%274to2%27OR+flair%3A%274too%27&restrict_sr=on&sort=relevance&t=all) | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
 
 "SovereignMan"
-	: " | Former moderator of /rconspiracy",
+    : " | Former moderator of /rconspiracy",
 }
 # duplicate for 4to4 aliases
 SPECIALS["4to3"] = SPECIALS["4to4"]

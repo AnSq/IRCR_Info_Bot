@@ -63,7 +63,7 @@ def load_db(sql):
     return cur
 
 
-def reddit_connect(useragent, multi):
+def reddit_connect(useragent, multi=False):
     """connect to reddit"""
     # connect to reddit
     handler = None
@@ -99,12 +99,16 @@ def login(r):
     return testmode
 
 
-def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)")):
+def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
     """returns a map of name to list of subreddits of moderators of the given subs.
     default reddit instance provided for convenience in terminal. Don't use it in scripts."""
 
+    if p: print "Loading moderators of %d subreddits:" % len(subs)
+
     mod_list = {}
+    i = 1
     for sub in subs:
+        if p: print "\t%s: /r/%s" % (str(i).rjust(2), sub)
         ml = None
         while True:
             try:
@@ -122,6 +126,9 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)")):
                 mod_list[name].append(sub)
             else:
                 mod_list[name] = [sub]
+
+
+        i += 1
 
     mod_list = {k.lower():v for k,v in mod_list.items()} #lowercase for easy lookup
     return mod_list
@@ -160,7 +167,7 @@ def setup():
         print "Not logging in."
         testmode = True
 
-    mod_list = load_mod_list(config.SPECIAL_MOD_SUBS, r)
+    mod_list = load_mod_list(config.SPECIAL_MOD_SUBS, r, True)
 
     if "--test" in sys.argv or "-t" in sys.argv:
         testmode = True
