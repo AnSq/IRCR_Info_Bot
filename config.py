@@ -4,7 +4,7 @@
 
 
 # Bot version. This goes in the user agent. Try to make sure different versions of the code that go live have different numbers
-VERSION = "1.2"
+VERSION = "1.3"
 
 
 # short description of what the bot does. For example "/u/GoldenSights' Newsletter bot"
@@ -15,12 +15,13 @@ USERAGENT = "/u/IRCR_Info_Bot v%s, controlled by the moderators of /r/isrconspir
 SUBREDDIT = "isrconspiracyracist"
 
 
-# remark that every user gets. _username_ will be replaced by the username automatically
-#NORMALSTRING = ": [Submissions](http://reddit.com/u/_username_/submitted) | [Comments](http://reddit.com/u/_username_/comments)"
-NORMALSTRING = ": [previous /r/ircr posts](http://www.reddit.com/r/isrconspiracyracist/search?q=_username_+OR+flair%3A%27_username_%27&restrict_sr=on&sort=relevance&t=all) | [Redective link](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=_username_) | [Redditgraphs link](http://redditgraphs.com/?_username_&PieChart&Number&Submissions)"
+# remark that every user gets. $username$ will be replaced by the username automatically
+# $prevcount$ is replaced by the number of previous posts mentioning the user
+#NORMALSTRING = ": [Submissions](http://reddit.com/u/$username$/submitted) | [Comments](http://reddit.com/u/$username$/comments)"
+NORMALSTRING = ": [previous /r/ircr posts ($prevcount$)](http://www.reddit.com/r/isrconspiracyracist/search?q=$username$+OR+flair%3A%27$username$%27&restrict_sr=on&sort=relevance&t=all) | [Redective link](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=$username$) | [Redditgraphs link](http://redditgraphs.com/?$username$&PieChart&Number&Submissions)"
 
 
-# Map of special users to their extra remark. _username_ will be replaced by the username automatically
+# Map of special users to their extra remark. $username$ will be replaced by the username automatically
 SPECIALS = {
 "Antiochus88"
     : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fantiochus88)",
@@ -48,12 +49,13 @@ SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes"
 
 
 # extra remark that mods of subs in SPECIAL_MOD_SUBS get.
-# _sublist_ replaced with list of modded subs (e.g., "/r/pics, /r/funny, and /r/conspiracy")
-MOD_REMARK = " | Moderator of _sublist_"
+# $sublist$ replaced with list of modded subs (e.g., "/r/pics, /r/funny, and /r/conspiracy")
+MOD_REMARK = " | Moderator of $sublist$"
 
 
-# remark for accounts which are invalid or shadowbanned. _username_ will be replaced by the username automatically
-DEADUSER = ": [previous /r/ircr posts](http://www.reddit.com/r/isrconspiracyracist/search?q=_username_+OR+flair%3A%27_username_%27&restrict_sr=on&sort=relevance&t=all) | Account shadowbanned/deleted"
+# remark for accounts which are invalid or shadowbanned. $username$ will be replaced by the username automatically
+# $prevcount$ is replaced by the number of previous posts mentioning the user
+DEADUSER = ": [previous /r/ircr posts ($prevcount$)](http://www.reddit.com/r/isrconspiracyracist/search?q=$username$+OR+flair%3A%27$username$%27&restrict_sr=on&sort=relevance&t=all) | Account shadowbanned/deleted"
 
 
 # This will be at the very top of the comment. \n\n creates a new line. Set this to "" if you don't want anything.

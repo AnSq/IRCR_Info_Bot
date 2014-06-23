@@ -37,7 +37,7 @@ def db_connect(pg):
     """connect to the database"""
     sql = None
     if pg:
-        # https://devcenter.heroku.com/articles/heroku-postgresql#connecting-in-python
+        # see https://devcenter.heroku.com/articles/heroku-postgresql#connecting-in-python
         urlparse.uses_netloc.append("postgres")
         url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
@@ -58,7 +58,8 @@ def db_connect(pg):
 def load_db(sql):
     """initialize the database and return a cursor"""
     cur = sql.cursor()
-    cur.execute('CREATE TABLE IF NOT EXISTS oldposts(ID TEXT)')
+    cur.execute("CREATE TABLE IF NOT EXISTS oldposts(ID TEXT);")
+    cur.execute("CREATE TABLE IF NOT EXISTS users(name TEXT UNIQUE, mentions INT);")
     sql.commit()
     return cur
 
@@ -205,7 +206,7 @@ def make_sublist(subs):
     return result
 
 
-def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
+def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
     """Generate remark for a user.
     default reddit instance provided for convenience in terminal. Don't use it in scripts."""
 
@@ -216,12 +217,12 @@ def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual 
         try:
             user = r.get_redditor(username, fetch=True)
             info = info.replace(username, user.name) # standardize capitalization
-            info += config.NORMALSTRING.replace('_username_', username)
+            info += config.NORMALSTRING.replace('$username$', username)
             break
         except Exception as e:
             if type(e).__name__ == "HTTPError" and str(e)[:3] == "404":
                 # A 404 error means the user was deleted or banned
-                info += config.DEADUSER.replace('_username_', username)
+                info += config.DEADUSER.replace('$username$', username)
                 if p: print '|\t\tDead'
                 break
             else:
@@ -230,15 +231,24 @@ def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual 
                 time.sleep(2)
                 continue
 
+    prevcount = 0
+    if cur:
+        cur.execute(query("SELECT mentions FROM users WHERE name = ?", pg), (username,))
+        result = cur.fetchone()
+        if result:
+            prevcount = result[0]
+    info = info.replace("$prevcount$", str(prevcount))
+    if p: print "|\t\t%d previous mentions" % prevcount
+
     if username.lower() in config.SPECIALS:
         if p: print '|\t\tSpecial'
-        info += config.SPECIALS[username.lower()].replace('_username_', username)
+        info += config.SPECIALS[username.lower()].replace('$username$', username)
 
     if username.lower() in mod_list:
         name = username.lower()
         subs = mod_list[name]
         if p: print "|\t\tMod " + str(subs)
-        info += config.MOD_REMARK.replace("_sublist_", make_sublist(subs))
+        info += config.MOD_REMARK.replace("$sublist$", make_sublist(subs))
 
     return info
 
@@ -253,7 +263,7 @@ def scan_title(title):
         end = start
 
         if end < len(title):
-            while title[end] in CHARS:
+            while end < len(title) and title[end] in CHARS:
                 end += 1
 
             users.add(title[start:end])
@@ -268,7 +278,7 @@ def make_comment(remarks):
     return config.HEADER + '\n\n- '.join(remarks) + config.FOOTER
 
 
-def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
+def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
     """generate a comment from a post title"""
     # default reddit instance provided for convenience in terminal. Don't use it in scripts.
 
@@ -277,12 +287,11 @@ def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (ma
 
     remarks = []
     for name in names:
-        remarks.append(make_info(name, mod_list, r, p))
+        remarks.append(make_info(name, mod_list, r, p, cur, pg))
 
-    num_names = len(names)
     comment = make_comment(remarks)
 
-    return (num_names, comment)
+    return (comment, names)
 
 
 def post_comment(post, comment, sql, testmode=False):
@@ -291,22 +300,27 @@ def post_comment(post, comment, sql, testmode=False):
         print "| Posting comment..."
         newcomment = post.add_comment(comment)
         sql.commit()
-        print '| Comment posted. (http://reddit.com/comments/%s/-/%s)' % (newcomment.link_id[3:], newcomment.id)
+        print "| Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
         if config.DISTINGUISHCOMMENT:
             newcomment.distinguish()
-            print '| Comment distinguished.'
+            print "| Comment distinguished."
     else:
         print "| Comment not posted (bot is running in testing mode)."
     print
 
 
+def increment_names(names, cur, pg):
+    for name in names:
+        cur.execute(query("SELECT * FROM users WHERE name = ?", pg), (name,))
+        if not cur.fetchone():
+            cur.execute(query("INSERT INTO users (name, mentions) VALUES (?,?)", pg), (name, 1))
+        else:
+            cur.execute(query("UPDATE users SET mentions = mentions + 1 WHERE name = ?", pg), (name,))
+
+
 def scanSub(r, sql, cur, pg, testmode, mod_list):
     """scan post titles and post comments"""
 
-    #list of characters which are allowed in usernames
-    CHARS = string.digits + string.ascii_letters + '-_'
-
-    #print 'Searching '+ config.SUBREDDIT + '.'
     subreddit = r.get_subreddit(config.SUBREDDIT)
     posts = subreddit.get_new(limit=config.MAXPOSTS)
     for post in posts:
@@ -314,20 +328,22 @@ def scanSub(r, sql, cur, pg, testmode, mod_list):
         try:
             pauthor = post.author.name
         except AttributeError:
-            pauthor = '[deleted]'
+            pauthor = "[deleted]"
         pid = post.id
-        cur.execute(query('SELECT * FROM oldposts WHERE ID = ?', pg), (pid,))
+        cur.execute(query("SELECT * FROM oldposts WHERE ID = ?", pg), (pid,))
         try:
             if not cur.fetchone():
-                cur.execute(query('INSERT INTO oldposts VALUES (?)', pg), (pid,))
+                cur.execute(query("INSERT INTO oldposts VALUES (?)", pg), (pid,))
                 print (u"\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("ascii", "backslashreplace")
 
-                num_names, comment = title_to_comment(ptitle, mod_list, r, True)
+                comment, names = title_to_comment(ptitle, mod_list, r, True, cur, pg)
 
-                if num_names > 0:
+                increment_names(names, cur, pg)
+
+                if len(names) > 0:
                     post_comment(post, comment, sql, testmode)
                 else:
-                    print '| \tNo users mentioned in post title.\n'
+                    print "|\tNo users mentioned in post title.\n"
         except:
             sql.rollback()
             raise
@@ -341,13 +357,12 @@ def main(r, sql, cur, pg, testmode, mod_list):
         try:
             scanSub(r, sql, cur, pg, testmode, mod_list)
         except Exception as e:
-            print '\n*** ERROR: %s: %s' % (type(e).__name__, str(e))
+            print "\n*** ERROR: %s: %s" % (type(e).__name__, str(e))
             if not (type(e).__name__ == "HTTPError" and str(e)[:3] == "504"):
                 # It gets so many 504s on Heroku and I don't want to hear about it.
                 print "--------------------------------"
                 traceback.print_exc()
                 print "--------------------------------\n"
-        #print 'Running again in %d seconds' % config.WAIT
         sql.commit()
         time.sleep(config.WAIT)
 
