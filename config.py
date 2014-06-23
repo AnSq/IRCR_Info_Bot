@@ -18,7 +18,7 @@ SUBREDDIT = "isrconspiracyracist"
 # remark that every user gets. $username$ will be replaced by the username automatically
 # $prevcount$ is replaced by the number of previous posts mentioning the user
 #NORMALSTRING = ": [Submissions](http://reddit.com/u/$username$/submitted) | [Comments](http://reddit.com/u/$username$/comments)"
-NORMALSTRING = ": [previous /r/ircr posts ($prevcount$)](http://www.reddit.com/r/isrconspiracyracist/search?q=$username$+OR+flair%3A%27$username$%27&restrict_sr=on&sort=relevance&t=all) | [Redective link](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=$username$) | [Redditgraphs link](http://redditgraphs.com/?$username$&PieChart&Number&Submissions)"
+NORMALSTRING = ": [other /r/ircr posts ($prevcount$ previous)](http://www.reddit.com/r/isrconspiracyracist/search?q=$username$+OR+flair%3A%27$username$%27&restrict_sr=on&sort=relevance&t=all) | [Redective link](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=$username$) | [Redditgraphs link](http://redditgraphs.com/?$username$&PieChart&Number&Submissions)"
 
 
 # Map of special users to their extra remark. $username$ will be replaced by the username automatically
