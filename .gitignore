@@ -1,8 +1,14 @@
+# generated file for initializing users table in db
+insert.py
+
 # bot login info
 auth.py
 
 sql.db
 *.pickle
+
+
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
