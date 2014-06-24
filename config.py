@@ -13,6 +13,12 @@ USERAGENT = "/u/IRCR_Info_Bot v%s, controlled by the moderators of /r/isrconspir
 
 # sub or list of subs to scan for new posts. For a single sub, use "sub1". For multiple subreddits, use "sub1+sub2+sub3+..."
 SUBREDDIT = "isrconspiracyracist"
+#SUBREDDIT = "ircr"
+
+
+# A list of alias lists. Each account in the sublist is the same person.
+# The first name of an alias list will be the "normal" name (used in SPECIALS, for example).
+ALIASES = [["4to4", "4to3", "4to2", "4too"]]
 
 
 # remark that every user gets. $username$ will be replaced by the username automatically
@@ -22,6 +28,7 @@ NORMALSTRING = ": [other /r/ircr posts ($prevcount$ previous)](http://www.reddit
 
 
 # Map of special users to their extra remark. $username$ will be replaced by the username automatically
+# automatically works for any alias when the key is the "normal" name (first name in alias list)
 SPECIALS = {
 "Antiochus88"
     : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fantiochus88)",
@@ -33,15 +40,16 @@ SPECIALS = {
     : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fjude_fetzen911)",
 
 "4to4"
-    : " | [**IRCR search with all aliases**](http://www.reddit.com/r/isrconspiracyracist/search?q=4to4+OR+4to3+OR+4to2+OR+4too+OR+flair%3A%274to4%27+OR+flair%3A%274to3%27+OR+flair%3A%274to2%27OR+flair%3A%274too%27&restrict_sr=on&sort=relevance&t=all) | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
+    : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
 
 "SovereignMan"
     : " | Former moderator of /rconspiracy",
 }
-# duplicate for 4to4 aliases
-SPECIALS["4to3"] = SPECIALS["4to4"]
-SPECIALS["4to2"] = SPECIALS["4to4"]
-SPECIALS["4too"] = SPECIALS["4to4"]
+
+
+# extra remark aliased names get. $searchquery$ replaced with reddit search query for all aliases, including in flairs.
+# $prevcount$ replaced with number of previous posts involving any alias
+ALIAS_REMARK = " | [**IRCR posts with any alias** ($prevcount$ previous)](http://www.reddit.com/r/isrconspiracyracist/search?q=$searchquery$&restrict_sr=on&sort=relevance&t=all)"
 
 
 # list of subreddits to add special remarks to mods of

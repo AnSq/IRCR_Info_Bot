@@ -8,6 +8,7 @@ import sys
 import os
 import urlparse
 import traceback
+#import cPickle
 
 
 # load settings
@@ -106,6 +107,11 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
 
     if p: print "Loading moderators of %d subreddits:" % len(subs)
 
+    #f = open("mod_list_cache.pickle", "r")
+    #mod_list = cPickle.load(f)
+    #f.close()
+    #return mod_list
+
     mod_list = {}
     i = 1
     for sub in subs:
@@ -143,6 +149,7 @@ def setup():
 
     # lowercase all usernams for easy lookup
     config.SPECIALS = {k.lower():v for k,v in config.SPECIALS.items()}
+    config.ALIASES = [[name.lower() for name in person] for person in config.ALIASES]
 
     # bot does not comment in testing mode
     testmode = False
@@ -206,10 +213,36 @@ def make_sublist(subs):
     return result
 
 
+def get_alias_list(name):
+    """return a list of names the given name also goes by"""
+    # haha, yes! See https://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
+    return [n for p in filter(lambda person: name in person, config.ALIASES) for n in p]
+
+
+def normalize_name(name):
+    """returns the "normal" name if the given name is an alias"""
+    alias_list = get_alias_list(name)
+    if len(alias_list) > 0:
+        return alias_list[0]
+    else:
+        return name
+
+
 def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
     """Generate remark for a user.
     default reddit instance provided for convenience in terminal. Don't use it in scripts."""
 
+    args = (username, mod_list, r, p, cur, pg)
+
+    info = make_normal_info(*args)
+    info += make_alias_info(*args)
+    info += make_special_info(*args)
+    info += make_mod_info(*args)
+
+    return info
+
+
+def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
     info = config.TRIGGERSTRING + username
     if p: print "|\t" + info
 
@@ -240,16 +273,41 @@ def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual 
     info = info.replace("$prevcount$", str(prevcount))
     if p: print "|\t\t%d previous mentions" % prevcount
 
-    if username.lower() in config.SPECIALS:
-        if p: print '|\t\tSpecial'
-        info += config.SPECIALS[username.lower()].replace('$username$', username)
+    return info
 
+
+def make_alias_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+    info = ""
+    alias_list = get_alias_list(username.lower())
+    if len(alias_list) > 0:
+        if p: print "|\t\tAlias"
+        searchquery = make_searchquery(alias_list)
+        cur.execute(query("SELECT sum(mentions) FROM users WHERE " + ("name=? OR "*len(alias_list))[:-4], pg), alias_list)
+        result = cur.fetchone()
+        prevcount = 0
+        if result and len(result) > 0 and result[0]:
+            prevcount = result[0]
+        if p: print "|\t\t%d previous alias mentions" % prevcount
+        info += config.ALIAS_REMARK.replace("$searchquery$", searchquery).replace("$prevcount$", str(prevcount))
+    return info
+
+
+def make_special_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+    info = ""
+    normal = normalize_name(username.lower())
+    if normal in config.SPECIALS:
+        if p: print '|\t\tSpecial'
+        info += config.SPECIALS[normal].replace('$username$', normal)
+    return info
+
+
+def make_mod_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+    info = ""
     if username.lower() in mod_list:
         name = username.lower()
         subs = mod_list[name]
         if p: print "|\t\tMod " + str(subs)
         info += config.MOD_REMARK.replace("$sublist$", make_sublist(subs))
-
     return info
 
 
@@ -310,12 +368,21 @@ def post_comment(post, comment, sql, testmode=False):
 
 
 def increment_names(names, cur, pg):
+    """increment the 'mentioned' value for all the given names"""
     for name in names:
         cur.execute(query("SELECT * FROM users WHERE name = ?", pg), (name,))
         if not cur.fetchone():
             cur.execute(query("INSERT INTO users (name, mentions) VALUES (?,?)", pg), (name, 1))
         else:
             cur.execute(query("UPDATE users SET mentions = mentions + 1 WHERE name = ?", pg), (name,))
+
+
+def make_searchquery(names):
+    """construct a search query for all the given names"""
+    q = ""
+    for name in names:
+        q += "$username$+OR+flair%3A%27$username$%27+OR+".replace("$username$", name)
+    return q[:-4] # chop off final "+OR+"
 
 
 def scanSub(r, sql, cur, pg, testmode, mod_list):
