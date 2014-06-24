@@ -324,7 +324,7 @@ def scanSub(r, sql, cur, pg, testmode, mod_list):
     subreddit = r.get_subreddit(config.SUBREDDIT)
     posts = subreddit.get_new(limit=config.MAXPOSTS)
     for post in posts:
-        ptitle = post.title
+        ptitle = "%s %s" % (post.link_flair_text, post.title)
         try:
             pauthor = post.author.name
         except AttributeError:
@@ -334,7 +334,10 @@ def scanSub(r, sql, cur, pg, testmode, mod_list):
         try:
             if not cur.fetchone():
                 cur.execute(query("INSERT INTO oldposts VALUES (?)", pg), (pid,))
-                print (u"\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % (ptitle, pid, pauthor)).encode("ascii", "backslashreplace")
+
+                data = (post.link_flair_text, post.title, pid, pauthor)
+                found_string = u"\n| Found post [%s] \"%s\" (http://redd.it/%s) by /u/%s" % data
+                print found_string.encode("ascii", "backslashreplace")
 
                 comment, names = title_to_comment(ptitle, mod_list, r, True, cur, pg)
 
