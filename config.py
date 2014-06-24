@@ -43,7 +43,7 @@ SPECIALS = {
     : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
 
 "SovereignMan"
-    : " | Former moderator of /rconspiracy",
+    : " | Former moderator of /r/conspiracy",
 }
 
 
