@@ -16,7 +16,10 @@ import config
 
 
 class DatabaseAccess (object):
+    """contains all methods for accessing the database"""
+
     def __init__(self, pg):
+        """load and connect to the database"""
         self.pg = pg
         self.load_db_lib()
         self.db_connect()
@@ -82,6 +85,7 @@ class DatabaseAccess (object):
 
 
     def get_mentions(self, username):
+        """get number of previous mentions of a username"""
         prevcount = 0
         self.cur.execute(self.query("SELECT mentions FROM users WHERE name = ?"), (username,))
         result = self.cur.fetchone()
@@ -91,6 +95,7 @@ class DatabaseAccess (object):
 
 
     def get_alias_mentions(self, alias_list):
+        """get combined number of previous mentions for a list of aliases"""
         self.cur.execute(self.query("SELECT sum(mentions) FROM users WHERE " + ("name=? OR "*len(alias_list))[:-4]), alias_list)
         result = self.cur.fetchone()
         prevcount = 0
@@ -110,19 +115,23 @@ class DatabaseAccess (object):
 
 
     def commit(self):
+        """commit all database changes"""
         self.conn.commit()
 
 
     def rollback(self):
+        """undo pending database changes"""
         self.conn.rollback()
 
 
     def is_oldpost(self, post_id):
+        """checks if a post is already in the database"""
         self.cur.execute(self.query("SELECT * FROM oldposts WHERE ID = ?"), (post_id,))
         return bool(cur.fetchone())
 
 
     def add_oldpost(self, post_id):
+        """add a post to the database"""
         self.cur.execute(self.query("INSERT INTO oldposts VALUES (?)"), (post_id,))
 
 
@@ -196,7 +205,6 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
             else:
                 mod_list[name] = [sub]
 
-
         i += 1
 
     mod_list = {k.lower():v for k,v in mod_list.items()} #lowercase for easy lookup
@@ -249,6 +257,7 @@ def setup():
 
 
 def make_sublist(subs):
+    """add '/r/'s to sub names and combine them with commas and 'and'"""
     if len(subs) == 1:
         return "/r/%s" % subs[0]
 
@@ -294,6 +303,8 @@ def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual 
 
 
 def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
+    """generate normal remark for all users, or dead remark"""
+
     info = config.TRIGGERSTRING + username
     if p: print "|\t" + info
 
@@ -325,6 +336,8 @@ def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (
 
 
 def make_alias_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
+    """generate remark for aliased usernames, if any"""
+
     info = ""
     alias_list = get_alias_list(username.lower())
     if len(alias_list) > 0:
@@ -341,6 +354,7 @@ def make_alias_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (m
 
 
 def make_special_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
+    """generate special remark for user, if any"""
     info = ""
     normal = normalize_name(username.lower())
     if normal in config.SPECIALS:
@@ -350,6 +364,7 @@ def make_special_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " 
 
 
 def make_mod_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
+    """generate mod remark, if user is a mod"""
     info = ""
     if username.lower() in mod_list:
         name = username.lower()
