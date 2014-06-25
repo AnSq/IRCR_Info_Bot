@@ -18,9 +18,9 @@ import config
 class DatabaseAccess (object):
     def __init__(self, pg):
         self.pg = pg
-        load_db_lib()
-        db_connect()
-        load_db()
+        self.load_db_lib()
+        self.db_connect()
+        self.load_db()
 
 
     def load_db_lib(self):
@@ -183,7 +183,7 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
             try:
                 ml = r.get_subreddit(sub).get_moderators()
                 break
-            except HTTPError as e:
+            except praw.requests.exceptions.HTTPError as e:
                 if str(e)[:3] == "504":
                     continue
                 else:
