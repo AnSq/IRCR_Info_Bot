@@ -15,54 +15,116 @@ import traceback
 import config
 
 
-def load_db_lib(pg):
-    """load correct database library"""
-    if pg:
-        try:
-            global psycopg2
-            import psycopg2
-        except:
-            print "Failed to load psycopg2 (Postgres library). Exiting."
-            sys.exit()
-    else:
-        global sqlite3
-        import sqlite3
-
-    if pg:
-        print "Using PostgreSQL"
-    else:
-        print "Using SQLite"
+class DatabaseAccess (object):
+    def __init__(self, pg):
+        self.pg = pg
+        load_db_lib()
+        db_connect()
+        load_db()
 
 
-def db_connect(pg):
-    """connect to the database"""
-    sql = None
-    if pg:
-        # see https://devcenter.heroku.com/articles/heroku-postgresql#connecting-in-python
-        urlparse.uses_netloc.append("postgres")
-        url = urlparse.urlparse(os.environ["DATABASE_URL"])
+    def load_db_lib(self):
+        """load correct database library"""
+        if self.pg:
+            try:
+                import psycopg2
+                self.psycopg2 = psycopg2
+            except:
+                print "Failed to load psycopg2 (Postgres library). Exiting."
+                sys.exit()
+        else:
+            import sqlite3
+            self.sqlite3 = sqlite3
 
-        sql = psycopg2.connect(
-            database=url.path[1:],
-            user=url.username,
-            password=url.password,
-            host=url.hostname,
-            port=url.port
-        )
-    else:
-        sql = sqlite3.connect('sql.db')
-
-    print "Connected to database"
-    return sql
+        if self.pg:
+            print "Using PostgreSQL"
+        else:
+            print "Using SQLite"
 
 
-def load_db(sql):
-    """initialize the database and return a cursor"""
-    cur = sql.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS oldposts(ID TEXT);")
-    cur.execute("CREATE TABLE IF NOT EXISTS users(name TEXT UNIQUE, mentions INT);")
-    sql.commit()
-    return cur
+    def db_connect(self):
+        """connect to the database"""
+        self.conn = None
+        if self.pg:
+            # see https://devcenter.heroku.com/articles/heroku-postgresql#connecting-in-python
+            urlparse.uses_netloc.append("postgres")
+            url = urlparse.urlparse(os.environ["DATABASE_URL"])
+
+            self.conn = self.psycopg2.connect(
+                database=url.path[1:],
+                user=url.username,
+                password=url.password,
+                host=url.hostname,
+                port=url.port
+            )
+        else:
+            self.conn = self.sqlite3.connect('sql.db')
+
+        print "Connected to database"
+        return self.conn
+
+
+    def load_db(self):
+        """initialize the database and return a cursor"""
+        self.cur = self.conn.cursor()
+        self.cur.execute("CREATE TABLE IF NOT EXISTS oldposts(ID TEXT);")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS users(name TEXT UNIQUE, mentions INT);")
+        self.conn.commit()
+        return self.cur
+
+
+    def query(self, q):
+        """Stupid hack to get it to work with Postgres with minimal effort."""
+        if self.pg:
+            return q.replace("?", "%s")
+        else:
+            return q
+
+
+    def get_mentions(self, username):
+        prevcount = 0
+        self.cur.execute(self.query("SELECT mentions FROM users WHERE name = ?"), (username,))
+        result = self.cur.fetchone()
+        if result:
+            prevcount = result[0]
+        return prevcount
+
+
+    def get_alias_mentions(self, alias_list):
+        self.cur.execute(self.query("SELECT sum(mentions) FROM users WHERE " + ("name=? OR "*len(alias_list))[:-4]), alias_list)
+        result = self.cur.fetchone()
+        prevcount = 0
+        if result and len(result) > 0 and result[0]:
+            prevcount = result[0]
+        return prevcount
+
+
+    def increment_names(self, names):
+        """increment the 'mentioned' value for all the given names"""
+        for name in names:
+            self.cur.execute(self.query("SELECT * FROM users WHERE name = ?"), (name,))
+            if not self.cur.fetchone():
+                self.cur.execute(self.query("INSERT INTO users (name, mentions) VALUES (?,?)"), (name, 1))
+            else:
+                self.cur.execute(self.query("UPDATE users SET mentions = mentions + 1 WHERE name = ?"), (name,))
+
+
+    def commit(self):
+        self.conn.commit()
+
+
+    def rollback(self):
+        self.conn.rollback()
+
+
+    def is_oldpost(self, post_id):
+        self.cur.execute(self.query("SELECT * FROM oldposts WHERE ID = ?"), (post_id,))
+        return bool(cur.fetchone())
+
+
+    def add_oldpost(self, post_id):
+        self.cur.execute(self.query("INSERT INTO oldposts VALUES (?)"), (post_id,))
+
 
 
 def reddit_connect(useragent, multi=False):
@@ -157,10 +219,7 @@ def setup():
     pg = False
     if "--postgres" in sys.argv or "-p" in sys.argv:
         pg = True
-    load_db_lib(pg)
-
-    sql = db_connect(pg)
-    cur = load_db(sql)
+    db = DatabaseAccess(pg)
 
     multi = False
     if "--multi" in sys.argv or "-m" in sys.argv:
@@ -186,15 +245,7 @@ def setup():
     else:
         print "Running in live mode. Bot will post comments."
 
-    return (r, sql, cur, pg, testmode, mod_list)
-
-
-def query(q, pg=False):
-    """Stupid hack to get it to work with Postgres with minimal effort."""
-    if pg:
-        return q.replace("?", "%s")
-    else:
-        return q
+    return (r, db, pg, testmode, mod_list)
 
 
 def make_sublist(subs):
@@ -228,11 +279,11 @@ def normalize_name(name):
         return name
 
 
-def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
     """Generate remark for a user.
     default reddit instance provided for convenience in terminal. Don't use it in scripts."""
 
-    args = (username, mod_list, r, p, cur, pg)
+    args = (username, mod_list, r, p, db, pg)
 
     info = make_normal_info(*args)
     info += make_alias_info(*args)
@@ -242,7 +293,7 @@ def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual 
     return info
 
 
-def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
     info = config.TRIGGERSTRING + username
     if p: print "|\t" + info
 
@@ -265,34 +316,31 @@ def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (
                 continue
 
     prevcount = 0
-    if cur:
-        cur.execute(query("SELECT mentions FROM users WHERE name = ?", pg), (username,))
-        result = cur.fetchone()
-        if result:
-            prevcount = result[0]
+    if db:
+        prevcount = db.get_mentions(username)
     info = info.replace("$prevcount$", str(prevcount))
     if p: print "|\t\t%d previous mentions" % prevcount
 
     return info
 
 
-def make_alias_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+def make_alias_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
     info = ""
     alias_list = get_alias_list(username.lower())
     if len(alias_list) > 0:
         if p: print "|\t\tAlias"
-        searchquery = make_searchquery(alias_list)
-        cur.execute(query("SELECT sum(mentions) FROM users WHERE " + ("name=? OR "*len(alias_list))[:-4], pg), alias_list)
-        result = cur.fetchone()
+
         prevcount = 0
-        if result and len(result) > 0 and result[0]:
-            prevcount = result[0]
+        if db:
+            prevcount = db.get_alias_mentions(alias_list)
+
         if p: print "|\t\t%d previous alias mentions" % prevcount
+        searchquery = make_searchquery(alias_list)
         info += config.ALIAS_REMARK.replace("$searchquery$", searchquery).replace("$prevcount$", str(prevcount))
     return info
 
 
-def make_special_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+def make_special_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
     info = ""
     normal = normalize_name(username.lower())
     if normal in config.SPECIALS:
@@ -301,7 +349,7 @@ def make_special_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " 
     return info
 
 
-def make_mod_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+def make_mod_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
     info = ""
     if username.lower() in mod_list:
         name = username.lower()
@@ -336,7 +384,7 @@ def make_comment(remarks):
     return config.HEADER + '\n\n- '.join(remarks) + config.FOOTER
 
 
-def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, cur=None, pg=False):
+def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
     """generate a comment from a post title"""
     # default reddit instance provided for convenience in terminal. Don't use it in scripts.
 
@@ -345,19 +393,19 @@ def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (ma
 
     remarks = []
     for name in names:
-        remarks.append(make_info(name, mod_list, r, p, cur, pg))
+        remarks.append(make_info(name, mod_list, r, p, db, pg))
 
     comment = make_comment(remarks)
 
     return (comment, names)
 
 
-def post_comment(post, comment, sql, testmode=False):
+def post_comment(post, comment, db, testmode=False):
     """submit a comment on a post"""
     if not testmode:
         print "| Posting comment..."
         newcomment = post.add_comment(comment)
-        sql.commit()
+        db.commit()
         print "| Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
         if config.DISTINGUISHCOMMENT:
             newcomment.distinguish()
@@ -365,16 +413,6 @@ def post_comment(post, comment, sql, testmode=False):
     else:
         print "| Comment not posted (bot is running in testing mode)."
     print
-
-
-def increment_names(names, cur, pg):
-    """increment the 'mentioned' value for all the given names"""
-    for name in names:
-        cur.execute(query("SELECT * FROM users WHERE name = ?", pg), (name,))
-        if not cur.fetchone():
-            cur.execute(query("INSERT INTO users (name, mentions) VALUES (?,?)", pg), (name, 1))
-        else:
-            cur.execute(query("UPDATE users SET mentions = mentions + 1 WHERE name = ?", pg), (name,))
 
 
 def make_searchquery(names):
@@ -385,7 +423,7 @@ def make_searchquery(names):
     return q[:-4] # chop off final "+OR+"
 
 
-def scanSub(r, sql, cur, pg, testmode, mod_list):
+def scanSub(r, db, pg, testmode, mod_list):
     """scan post titles and post comments"""
 
     subreddit = r.get_subreddit(config.SUBREDDIT)
@@ -397,35 +435,34 @@ def scanSub(r, sql, cur, pg, testmode, mod_list):
         except AttributeError:
             pauthor = "[deleted]"
         pid = post.id
-        cur.execute(query("SELECT * FROM oldposts WHERE ID = ?", pg), (pid,))
         try:
-            if not cur.fetchone():
-                cur.execute(query("INSERT INTO oldposts VALUES (?)", pg), (pid,))
+            if not db.is_oldpost(pid):
+                db.add_oldpost(pid)
 
                 data = (post.link_flair_text, post.title, pid, pauthor)
                 found_string = u"\n| Found post [%s] \"%s\" (http://redd.it/%s) by /u/%s" % data
                 print found_string.encode("ascii", "backslashreplace")
 
-                comment, names = title_to_comment(ptitle, mod_list, r, True, cur, pg)
+                comment, names = title_to_comment(ptitle, mod_list, r, True, db, pg)
 
-                increment_names(names, cur, pg)
+                db.increment_names(names)
 
                 if len(names) > 0:
-                    post_comment(post, comment, sql, testmode)
+                    post_comment(post, comment, db, testmode)
                 else:
                     print "|\tNo users mentioned in post title.\n"
         except:
-            sql.rollback()
+            db.rollback()
             raise
         finally:
-            sql.commit()
+            db.commit()
 
 
-def main(r, sql, cur, pg, testmode, mod_list):
+def main(r, db, pg, testmode, mod_list):
     """continuously scan and post comments"""
     while True:
         try:
-            scanSub(r, sql, cur, pg, testmode, mod_list)
+            scanSub(r, db, pg, testmode, mod_list)
         except Exception as e:
             print "\n*** ERROR: %s: %s" % (type(e).__name__, str(e))
             if not (type(e).__name__ == "HTTPError" and str(e)[:3] == "504"):
