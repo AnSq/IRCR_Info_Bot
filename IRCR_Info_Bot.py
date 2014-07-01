@@ -8,7 +8,7 @@ import sys
 import os
 import urlparse
 import traceback
-#import cPickle
+import cPickle
 
 
 # load settings
@@ -127,7 +127,7 @@ class DatabaseAccess (object):
     def is_oldpost(self, post_id):
         """checks if a post is already in the database"""
         self.cur.execute(self.query("SELECT * FROM oldposts WHERE ID = ?"), (post_id,))
-        return bool(cur.fetchone())
+        return bool(self.cur.fetchone())
 
 
     def add_oldpost(self, post_id):
@@ -178,10 +178,12 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
 
     if p: print "Loading moderators of %d subreddits:" % len(subs)
 
-    #f = open("mod_list_cache.pickle", "r")
-    #mod_list = cPickle.load(f)
-    #f.close()
-    #return mod_list
+    if "--cache" in sys.argv or "-c" in sys.argv:
+        print "Loading mod list from cache."
+        f = open("mod_list_cache.pickle", "r")
+        mod_list = cPickle.load(f)
+        f.close()
+        return mod_list
 
     mod_list = {}
     i = 1
@@ -485,7 +487,7 @@ def main(r, db, pg, testmode, mod_list):
                 print "--------------------------------"
                 traceback.print_exc()
                 print "--------------------------------\n"
-        sql.commit()
+        db.commit()
         time.sleep(config.WAIT)
 
 

@@ -17,6 +17,8 @@ The environment variables `IRCR_USERNAME` and `IRCR_PASSWORD` are used to log in
 
 Use the `--test` (or `-t`) flag to turn on testing mode. The bot will not post comments in testing mode.
 
+Use the `--cache` (or `-c`) flag to load the moderator list from cache instead of downloading it. See the "Manual Operation" section below for more information.
+
 Use the `--multi` (or `-m`) flag to connect to `praw-multiprocess` if you're running other reddit bots at the same time. ([More info in the praw docs.](http://praw.readthedocs.org/en/latest/pages/multiprocess.html))
 
 To not even attempt logging in, use the `--nologin` (or `-n`) flag (implies `--test`).
