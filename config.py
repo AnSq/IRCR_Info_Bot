@@ -18,7 +18,7 @@ SUBREDDIT = "isrconspiracyracist"
 
 # A list of alias lists. Each account in the sublist is the same person.
 # The first name of an alias list will be the "normal" name (used in SPECIALS, for example).
-ALIASES = [["4to4", "4to3", "4to2", "4too"]]
+ALIASES = [["4to4", "4to3", "4to2", "4too"], ["Jewish_NeoCon", "Jewish_NeoCon2"]]
 
 
 # remark that every user gets. $username$ will be replaced by the username automatically
@@ -27,8 +27,8 @@ ALIASES = [["4to4", "4to3", "4to2", "4too"]]
 NORMALSTRING = ": [other /r/ircr posts ($prevcount$ previous)](http://www.reddit.com/r/isrconspiracyracist/search?q=$username$+OR+flair%3A%27$username$%27&restrict_sr=on&sort=relevance&t=all) | [Redective link](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=$username$) | [Redditgraphs link](http://redditgraphs.com/?$username$&PieChart&Number&Submissions)"
 
 
-# Map of special users to their extra remark. $username$ will be replaced by the username automatically
-# automatically works for any alias when the key is the "normal" name (first name in alias list)
+# Map of special users to their extra remark. $username$ will be replaced by the username automatically.
+# Automatically works for any alias when the key is the "normal" name (first name in alias list)
 SPECIALS = {
 "Antiochus88"
     : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fantiochus88)",
