@@ -16,12 +16,13 @@ if not os.path.exists(gml.fname):
 f = open(gml.fname, "r")
 mod_list = cPickle.load(f)
 f.close()
+print "Loaded mod list"
 
 title = ""
 for name in sys.argv[2 if multi else 1:]:
     title += "/u/%s " % name
 
-num, comment = ircr.title_to_comment(title, mod_list, r, False)
+comment, userlist = ircr.title_to_comment(title, mod_list, r, p=True)
 
 print "-------------------------------\n\n\n"
 print comment
