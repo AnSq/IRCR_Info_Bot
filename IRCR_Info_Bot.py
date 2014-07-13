@@ -185,6 +185,8 @@ class MessageScanner (threading.Thread):
         if not nologin:
             login(self.r)
 
+        self.mods = set([u.name for u in r.get_subreddit(config.SUBREDDIT).get_moderators()])
+
 
     def scan(self):
         """scan comments"""
@@ -219,24 +221,28 @@ class MessageScanner (threading.Thread):
                 if not self.db.is_oldcomment(id):
                     self.db.add_oldcomment(id)
 
-                    text = comment.body[len(trigger):]
-                    try:
-                        author = comment.author.name
-                    except AttributeError:
-                        author = "[deleted]"
+                    if comment.author.name in self.mods or comment.author.name == comment.submission.author.name:
+                        text = comment.body[len(trigger):]
+                        try:
+                            author = comment.author.name
+                        except AttributeError:
+                            author = "[deleted]"
 
-                    link = "http://www.reddit.com/comments/%s/-/%s" % (comment.link_id[3:], comment.id)
-                    found_string = u"\n! Found comment (%s) by /u/%s" % (link, author)
-                    print found_string.encode("ascii", "backslashreplace")
+                        link = "http://www.reddit.com/comments/%s/-/%s" % (comment.link_id[3:], comment.id)
+                        found_string = u"\n! Found comment (%s) by /u/%s" % (link, author)
+                        print found_string.encode("ascii", "backslashreplace")
 
-                    reply, names = text_to_comment(text, self.mod_list, self.r, True, self.db, self.pg)
+                        reply, names = text_to_comment(text, self.mod_list, self.r, True, self.db, self.pg)
 
-                    self.db.increment_names(names)
+                        self.db.increment_names(names)
 
-                    if len(names) > 0:
-                        self.post_reply(comment, reply)
-                    else:
-                        print "!\tNo users mentioned in comment.\n"
+                        if len(names) > 0:
+                            self.post_reply(comment, reply)
+                        else:
+                            print "!\tNo users mentioned in comment.\n"
+
+                    #else:
+                    #    self.post_reply(comment, config.DISALLOWED_SUMMON.replace("_username_", comment.body[4:len(trigger)]))
             except:
                 self.db.rollback()
                 raise

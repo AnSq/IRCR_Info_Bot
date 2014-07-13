@@ -70,8 +70,17 @@ DEADUSER = ": [previous /r/ircr posts ($prevcount$)](http://www.reddit.com/r/isr
 HEADER = "More information about these users:\n\n#####&#009;\n\n######&#009;\n\n####&#009;\n\n- "
 
 
+# Something about this being a bot and tell us if there's a problem. Maybe a source code link too.
+DISCLAIMER = "\n\n*[I am a bot](https://github.com/AnSq/IRCR_Info_Bot). Contact the [moderators](http://www.reddit.com/message/compose?to=%2Fr%2Fisrconspiracyracist) if there is a problem.*"
+
+
 # This will be at the very bottom of the comment. Set to "" if you don't want anything.
-FOOTER = "\n\n####&#009;\n\n#####&#009;\n\n###&#009;\n\n*[I am a bot](https://github.com/AnSq/IRCR_Info_Bot). Contact the [moderators](http://www.reddit.com/message/compose?to=%2Fr%2Fisrconspiracyracist) if there is a problem.*"
+FOOTER = "\n\n####&#009;\n\n#####&#009;\n\n###&#009;" + DISCLAIMER
+
+
+# Comment when the bot has been summoned by someone other than OP or a mod.
+# _username_ is replaced by the bot's username as it was summoned
+#DISALLOWED_SUMMON = ">+/u/_username_\n\nOnly the OP and mods can summon the bot." + DISCLAIMER
 
 
 # If your bot is a moderator, you can distinguish the comment. Use True or False (Use capitals! No quotations!)
