@@ -11,7 +11,7 @@ Originally written by [/u/GoldenSights](http://www.reddit.com/user/GoldenSights)
 
 Run with `python IRCR_Info_Bot.py [options]`.
 
-Settings are stored in `config.py`.
+Settings are stored in [`config.py`](https://github.com/AnSq/IRCR_Info_Bot/blob/master/config.py). Descriptions of each setting can be found in the comments of that file.
 
 The environment variables `IRCR_USERNAME` and `IRCR_PASSWORD` are used to log in.
 
@@ -26,6 +26,13 @@ To not even attempt logging in, use the `--nologin` (or `-n`) flag (implies `--t
 To use PostgreSQL instead of SQLite use the `--postgres` (or `-p`) flag. (Mainly for Heroku.) Requires that a `DATABASE_URL` environment variable be defined in the form `postgres://<username>:<password>@<host>:<port>/<database>`.
 
 The argument parsing isn't all that sophisticated, so, for example, `-mn` is *not* a synonym for `-m -n`.
+
+
+## Summoning
+
+The bot can be summoned to post information about additional users not in the title by posting a comment beginning with “+/u/*[bot-username]*”. Everything after this is scanned for usernames exactly the same way submission titles are.
+
+This only works in subreddits the bot is scanning submission in, as defined in `config.SUBREDDIT`.
 
 
 ## Manual Operation

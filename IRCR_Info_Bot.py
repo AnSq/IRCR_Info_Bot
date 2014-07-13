@@ -9,10 +9,15 @@ import os
 import urlparse
 import traceback
 import cPickle
+import threading
 
 
 # load settings
 import config
+
+# undocumented feature: use --ircr flag to switch to scanning /r/ircr
+if "--ircr" in sys.argv:
+    config.SUBREDDIT = "ircr"
 
 
 class DatabaseAccess (object):
@@ -72,6 +77,7 @@ class DatabaseAccess (object):
         self.cur = self.conn.cursor()
         self.cur.execute("CREATE TABLE IF NOT EXISTS oldposts(ID TEXT);")
         self.cur.execute("CREATE TABLE IF NOT EXISTS users(name TEXT UNIQUE, mentions INT);")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS oldcomments(ID TEXT);")
         self.conn.commit()
         return self.cur
 
@@ -130,10 +136,137 @@ class DatabaseAccess (object):
         return bool(self.cur.fetchone())
 
 
+    def is_oldcomment(self, comment_id):
+        """checks if a comment is already in the database"""
+        self.cur.execute(self.query("SELECT * FROM oldcomments WHERE ID = ?"), (comment_id,))
+        return bool(self.cur.fetchone())
+
+
     def add_oldpost(self, post_id):
         """add a post to the database"""
         self.cur.execute(self.query("INSERT INTO oldposts VALUES (?)"), (post_id,))
 
+
+    def add_oldcomment(self, comment_id):
+        """add a post to the database"""
+        self.cur.execute(self.query("INSERT INTO oldcomments VALUES (?)"), (comment_id,))
+
+
+
+class MessageScanner (threading.Thread):
+    """performs actions based on comments"""
+
+    def __init__(self, testmode, pg, multi, nologin, mod_list):
+        """create thread"""
+
+        threading.Thread.__init__(self)
+
+        self.testmode = testmode
+        self.pg = pg
+        self.multi = multi
+        self.nologin = nologin
+        self.mod_list = mod_list
+
+
+    def run(self):
+        """thread contents"""
+        self.setup()
+        self.scan()
+
+
+    def setup(self):
+        """connect to database and logging in to reddit"""
+
+        print "Initializing MessageScanner"
+
+        self.db = DatabaseAccess(self.pg)
+        self.r = reddit_connect(config.USERAGENT, self.multi)
+
+        if not nologin:
+            login(self.r)
+
+
+    def scan(self):
+        """scan comments"""
+        print "Starting MessageScanner"
+
+        # store seen comments in memory for faster processing
+        # no sense wasting space making it persistent though
+        # handled comments already persist
+        seen = set()
+
+        while True:
+            generator = r.get_subreddit(config.SUBREDDIT).get_comments(limit=100)
+            for comment in generator:
+                seen.add(comment.id)
+                self.handle(comment)
+            time.sleep(config.WAIT)
+
+
+    def handle(self, comment):
+        """do stuff with a comment"""
+
+        username = "ircr"
+        try:
+            username = os.environ["IRCR_USERNAME"]
+        except:
+            pass
+        trigger = "+/u/" + username.lower()
+
+        if comment.body[:len(trigger)].lower() == trigger:
+            id = comment.id
+            try:
+                if not self.db.is_oldcomment(id):
+                    self.db.add_oldcomment(id)
+
+                    text = comment.body[len(trigger):]
+                    try:
+                        author = comment.author.name
+                    except AttributeError:
+                        author = "[deleted]"
+
+                    link = "http://www.reddit.com/comments/%s/-/%s" % (comment.link_id[3:], comment.id)
+                    found_string = u"\n! Found comment (%s) by /u/%s" % (link, author)
+                    print found_string.encode("ascii", "backslashreplace")
+
+                    reply, names = text_to_comment(text, self.mod_list, self.r, True, self.db, self.pg)
+
+                    self.db.increment_names(names)
+
+                    if len(names) > 0:
+                        self.post_reply(comment, reply)
+                    else:
+                        print "!\tNo users mentioned in comment.\n"
+            except:
+                self.db.rollback()
+                raise
+            finally:
+                self.db.commit()
+
+
+    def post_reply(self, parent, comment):
+        """submit a reply to a parent comment"""
+        if not self.testmode:
+            print "! Posting comment..."
+            newcomment = parent.reply(comment)
+            self.db.commit()
+            print "! Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
+            if config.DISTINGUISHCOMMENT:
+                newcomment.distinguish()
+                print "! Comment distinguished."
+        else:
+            print "! Comment not posted (bot is running in testing mode)."
+        print
+
+
+
+def print_exception(e):
+    print "\n*** ERROR: %s: %s" % (type(e).__name__, str(e))
+    if not (type(e).__name__ == "HTTPError" and str(e)[:3] == "504"):
+        # It gets so many 504s on Heroku and I don't want to hear about it.
+        print "--------------------------------"
+        traceback.print_exc()
+        print "--------------------------------\n"
 
 
 def reddit_connect(useragent, multi=False):
@@ -238,11 +371,16 @@ def setup():
 
 
     # login
-    if not "--nologin" in sys.argv and not "-n" in sys.argv:
+    nologin = False
+    if "--nologin" in sys.argv or "-n" in sys.argv:
+        nologin = True
+
+    if not nologin:
         testmode |= login(r)
     else:
         print "Not logging in."
         testmode = True
+
 
     mod_list = load_mod_list(config.SPECIAL_MOD_SUBS, r, True)
 
@@ -255,7 +393,7 @@ def setup():
     else:
         print "Running in live mode. Bot will post comments."
 
-    return (r, db, pg, testmode, mod_list)
+    return (r, db, pg, testmode, mod_list, multi, nologin)
 
 
 def make_sublist(subs):
@@ -401,7 +539,7 @@ def make_comment(remarks):
     return config.HEADER + '\n\n- '.join(remarks) + config.FOOTER
 
 
-def title_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
+def text_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
     """generate a comment from a post title"""
     # default reddit instance provided for convenience in terminal. Don't use it in scripts.
 
@@ -460,7 +598,7 @@ def scanSub(r, db, pg, testmode, mod_list):
                 found_string = u"\n| Found post [%s] \"%s\" (http://redd.it/%s) by /u/%s" % data
                 print found_string.encode("ascii", "backslashreplace")
 
-                comment, names = title_to_comment(ptitle, mod_list, r, True, db, pg)
+                comment, names = text_to_comment(ptitle, mod_list, r, True, db, pg)
 
                 db.increment_names(names)
 
@@ -481,15 +619,20 @@ def main(r, db, pg, testmode, mod_list):
         try:
             scanSub(r, db, pg, testmode, mod_list)
         except Exception as e:
-            print "\n*** ERROR: %s: %s" % (type(e).__name__, str(e))
-            if not (type(e).__name__ == "HTTPError" and str(e)[:3] == "504"):
-                # It gets so many 504s on Heroku and I don't want to hear about it.
-                print "--------------------------------"
-                traceback.print_exc()
-                print "--------------------------------\n"
+            print_exception(e)
         db.commit()
         time.sleep(config.WAIT)
 
 
 if __name__ == "__main__":
-    main(*setup())
+    try:
+        r, db, pg, testmode, mod_list, multi, nologin = setup()
+
+        msg_scan = MessageScanner(testmode, pg, multi, nologin, mod_list)
+        msg_scan.daemon = True
+        msg_scan.start()
+
+        main(r, db, pg, testmode, mod_list)
+
+    except KeyboardInterrupt:
+        print "\nExit"
