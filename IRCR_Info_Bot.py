@@ -237,7 +237,8 @@ class CommentScanner (threading.Thread):
 
                         reply, names = text_to_comment(text, self.mod_list, self.r, True, self.db, self.pg)
 
-                        self.db.increment_names(names)
+                        # Don't increment counts from summons (http://www.reddit.com/comments/2amark/-/cixzt9k?context=3)
+                        #self.db.increment_names(names)
 
                         if len(names) > 0:
                             self.post_reply(comment, reply)
