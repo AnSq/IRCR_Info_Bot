@@ -78,11 +78,6 @@ DISCLAIMER = "\n\n*[I am a bot](https://github.com/AnSq/IRCR_Info_Bot). Contact 
 FOOTER = "\n\n####&#009;\n\n#####&#009;\n\n###&#009;" + DISCLAIMER
 
 
-# Comment when the bot has been summoned by someone other than OP or a mod.
-# _username_ is replaced by the bot's username as it was summoned
-#DISALLOWED_SUMMON = ">+/u/_username_\n\nOnly the OP and mods can summon the bot." + DISCLAIMER
-
-
 # If your bot is a moderator, you can distinguish the comment. Use True or False (Use capitals! No quotations!)
 DISTINGUISHCOMMENT = True
 
