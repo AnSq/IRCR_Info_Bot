@@ -153,7 +153,7 @@ class DatabaseAccess (object):
 
 
 
-class MessageScanner (threading.Thread):
+class CommentScanner (threading.Thread):
     """performs actions based on comments"""
 
     def __init__(self, testmode, pg, multi, nologin, mod_list):
@@ -177,7 +177,7 @@ class MessageScanner (threading.Thread):
     def setup(self):
         """connect to database and logging in to reddit"""
 
-        print "Initializing MessageScanner"
+        print "Initializing CommentScanner"
 
         self.db = DatabaseAccess(self.pg)
         self.r = reddit_connect(config.USERAGENT, self.multi)
@@ -190,7 +190,7 @@ class MessageScanner (threading.Thread):
 
     def scan(self):
         """scan comments"""
-        print "Starting MessageScanner"
+        print "Starting CommentScanner"
 
         # store seen comments in memory for faster processing
         # no sense wasting space making it persistent though
@@ -198,11 +198,14 @@ class MessageScanner (threading.Thread):
         seen = set()
 
         while True:
-            generator = r.get_subreddit(config.SUBREDDIT).get_comments(limit=100)
-            for comment in generator:
-                seen.add(comment.id)
-                self.handle(comment)
-            time.sleep(config.WAIT)
+            try:
+                generator = r.get_subreddit(config.SUBREDDIT).get_comments(limit=100)
+                for comment in generator:
+                    seen.add(comment.id)
+                    self.handle(comment)
+                time.sleep(config.WAIT)
+            except Exception as e:
+                print_exception(e)
 
 
     def handle(self, comment):
@@ -634,7 +637,7 @@ if __name__ == "__main__":
     try:
         r, db, pg, testmode, mod_list, multi, nologin = setup()
 
-        msg_scan = MessageScanner(testmode, pg, multi, nologin, mod_list)
+        msg_scan = CommentScanner(testmode, pg, multi, nologin, mod_list)
         msg_scan.daemon = True
         msg_scan.start()
 
