@@ -18,7 +18,7 @@ SUBREDDIT = "isrconspiracyracist"
 
 # A list of alias lists. Each account in the sublist is the same person.
 # The first name of an alias list will be the "normal" name (used in SPECIALS, for example).
-ALIASES = [["4to4", "4to3", "4to2", "4too"], ["Jewish_NeoCon", "Jewish_NeoCon2"]]
+ALIASES = [["4to4", "4to3", "4to2", "4too"], ["Jewish_NeoCon", "Jewish_NeoCon2"], ["Enochx", "Aerioch"]]
 
 
 # remark that every user gets. $username$ will be replaced by the username automatically
@@ -53,7 +53,7 @@ ALIAS_REMARK = " | [**IRCR posts with any alias** ($prevcount$ previous)](http:/
 
 
 # list of subreddits to add special remarks to mods of
-SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "WhiteRightsUK", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi"]
+SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "WhiteRightsUK", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi", "GoEbola"]
 
 
 # extra remark that mods of subs in SPECIAL_MOD_SUBS get.
