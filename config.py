@@ -67,15 +67,23 @@ DEADUSER = ": [previous /r/ircr posts ($prevcount$)](http://www.reddit.com/r/isr
 
 
 # This will be at the very top of the comment. \n\n creates a new line. Set this to "" if you don't want anything.
-HEADER = "More information about these users:\n\n#####&#009;\n\n######&#009;\n\n####&#009;\n\n- "
+HEADER = "More information about these users:"
+
+
+# This will follow the header if there is more than one user
+COLLAPSIBLE_HEADER = "\n\n#####&#009;\n\n######&#009;\n\n####&#009;"
 
 
 # Something about this being a bot and tell us if there's a problem. Maybe a source code link too.
 DISCLAIMER = "\n\n*[I am a bot](https://github.com/AnSq/IRCR_Info_Bot). Contact the [moderators](http://www.reddit.com/message/compose?to=%2Fr%2Fisrconspiracyracist) if there is a problem.*"
 
 
+# This will precede the footer if there is more than one user
+COLLAPSIBLE_FOOTER = "\n\n####&#009;\n\n#####&#009;\n\n###&#009;"
+
+
 # This will be at the very bottom of the comment. Set to "" if you don't want anything.
-FOOTER = "\n\n####&#009;\n\n#####&#009;\n\n###&#009;" + DISCLAIMER
+FOOTER = DISCLAIMER
 
 
 # If your bot is a moderator, you can distinguish the comment. Use True or False (Use capitals! No quotations!)

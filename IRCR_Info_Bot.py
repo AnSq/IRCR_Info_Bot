@@ -541,7 +541,14 @@ def scan_title(title):
 
 def make_comment(remarks):
     """generate a complete comment from a collection of remarks"""
-    return config.HEADER + '\n\n- '.join(remarks) + config.FOOTER
+    header = config.HEADER
+    footer = config.FOOTER
+
+    if len(remarks) > 1:
+		header = header + config.COLLAPSIBLE_HEADER
+		footer = config.COLLAPSIBLE_FOOTER + footer
+
+    return header + "\n\n- " + "\n\n- ".join(remarks) + footer
 
 
 def text_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
