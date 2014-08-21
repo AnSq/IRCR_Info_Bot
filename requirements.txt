@@ -1,6 +1,6 @@
 argparse==1.2.1
 setuptools==3.6
-praw==2.1.17
+praw==2.1.18
 requests==2.3.0
 six==1.7.2
 update-checker==0.10
