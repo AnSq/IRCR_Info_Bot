@@ -4,7 +4,7 @@
 
 
 # Bot version. This goes in the user agent. Try to make sure different versions of the code that go live have different numbers
-VERSION = "1.4"
+VERSION = "1.5"
 
 
 # short description of what the bot does. For example "/u/GoldenSights' Newsletter bot"
@@ -53,7 +53,7 @@ ALIAS_REMARK = " | [**IRCR posts with any alias** ($prevcount$ previous)](http:/
 
 
 # list of subreddits to add special remarks to mods of
-SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "WhiteRightsUK", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi", "GoEbola"]
+SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "WhiteRightsUK", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi", "GoEbola", 'AlSharpton', 'Apefrica', 'AskBetas', 'Ausfailia', 'Ben_Garrison', 'BlackAfrica', 'BlackHusbands', 'BritishNationalParty', 'CamelFucker', 'CamelFuckers', 'CaveNigger', 'CaveNiggers', 'ChildFreee', 'ChimpireMETA', 'ChimpireOfftopic', 'Darren_Wilson', 'Detoilet', 'DurkaDurka', 'FunnyNigger', 'GoodLuckEbola', 'GreatApes2', 'HailOdin', 'JewishQuestion', 'Jihadi', 'JustBlackGirlThings', 'LiberalDegeneracy', 'Londonistan', 'N1GGERS', 'NegroFree', 'NiggerCartoons', 'NiggerDocumentaries', 'NiggerDrama', 'NiggerFacts', 'NiggerMythology', 'NiggerNews', 'NiggerTIL', 'NiggersCartoons', 'NiggersDocumentaries', 'NiggersGIFs', 'NiggersNews', 'NiggersRedditDrama', 'NiggersTIL', 'Nignigs', 'Pakis', 'PlanetoftheGreatApes', 'RacistNiggers', 'Raghead', 'Ragheads', 'SandCoon', 'SandCoons', 'SandFleas', 'SandMonkey', 'SandMonkeys', 'SandN1gger', 'SandN1ggers', 'SandNazi', 'SandNazis', 'Sand_Niggers', 'SheetWearingRagHeads', 'ShitMummies', 'ShitMummy', 'ShitNiggersSay', 'SleeperCells', 'SwedenYes', 'TNB', 'Terrab', 'TheGoyimKnow', 'TheProjects', 'TheRacistRedPill', 'ThuleanPerspective', 'TowelHead', 'Towlie', 'TrayvonMartin', 'TrueFerguson', 'TwoXSheboons', 'TypicalNBehavior', 'TypicalNiggerBehavior', 'UKistan', 'USBlackCulture', 'UrbanTurban', 'Volkisch', 'WTFniggers', 'WatchNiggersDie', 'WhiteIdentity', 'WhiteRights1', 'WhiteRightsScience', 'WorldStarHP', 'apewrangling', 'cameljockeys', 'chicongo', 'chimpmusic', 'coons', 'didntdonuffins', 'dintdonuffin', 'dotheads', 'farright', 'feministbeauty', 'ferguson', 'fergusonriot', 'fergusonriots', 'funnyniggers', 'gibsmedat', 'goatfucker', 'jewpride', 'media', 'mudslime', 'muhdick', 'muhdik', 'niggerhistorymonth', 'niggersdrama', 'niggersfacts', 'niggerspics', 'niggersstories', 'niggersvideos', 'niggervideos', 'niglets', 'odinist', 'photobucket', 'pocecil', 'polacks', 'polfacts', 'shegroids', 'teenapers', 'traditional', 'whitebeauty']
 
 
 # extra remark that mods of subs in SPECIAL_MOD_SUBS get.
