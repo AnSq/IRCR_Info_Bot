@@ -328,15 +328,27 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
     for sub in subs:
         if p: print "\t%s: /r/%s" % (str(i).rjust(2), sub)
         ml = None
+        skip = False
         while True:
             try:
                 ml = r.get_subreddit(sub).get_moderators()
                 break
             except praw.requests.exceptions.HTTPError as e:
                 if str(e)[:3] == "504":
-                    continue
+                    print "\t\t504"
+                    continue #retry until it works
+                elif str(e)[:3] == "403":
+                    print "\t\t403 (private?)"
+                    # skip subreddit
+                    skip = True
+                    break
                 else:
                     raise
+
+        i += 1
+
+        if skip:
+            continue
 
         mods = [u.name for u in ml]
         for name in mods:
@@ -345,7 +357,6 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
             else:
                 mod_list[name] = [sub]
 
-        i += 1
 
     mod_list = {k.lower():v for k,v in mod_list.items()} #lowercase for easy lookup
     return mod_list
@@ -545,8 +556,8 @@ def make_comment(remarks):
     footer = config.FOOTER
 
     if len(remarks) > 1:
-		header = header + config.COLLAPSIBLE_HEADER
-		footer = config.COLLAPSIBLE_FOOTER + footer
+        header = header + config.COLLAPSIBLE_HEADER
+        footer = config.COLLAPSIBLE_FOOTER + footer
 
     return header + "\n\n- " + "\n\n- ".join(remarks) + footer
 
