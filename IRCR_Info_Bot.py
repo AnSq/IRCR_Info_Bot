@@ -553,7 +553,8 @@ def scan_title(title):
             while end < len(title) and title[end] in CHARS:
                 end += 1
 
-            users.add(title[start:end])
+            if len(title[start:end]) > 0:
+                users.add(title[start:end])
 
         title = title[start:]
         index = title.find(config.TRIGGERSTRING)
