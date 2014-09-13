@@ -42,8 +42,65 @@ SPECIALS = {
 "4to4"
     : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
 
+"4to3"
+    : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
+
+"4too"
+    : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
+
 "SovereignMan"
     : " | Former moderator of /r/conspiracy",
+    
+"MayMayPoster"
+    : " | Alt account of /u/European88",
+    
+"TheCanticleer"
+    : " | Unashamed anti-semite, blames Jews for 9/11",
+   
+"KlausDuJong"
+    : " | [White supremacist. Literally fantasizes about genociding Jews; blames them for 9/11](http://redd.it/2eob41)",
+
+"Flytape"
+    : " | Pro-racism mod of /r/conspiracy",
+
+"Enochx"
+    : " | Anti-semite; likes to hide behind 'Zionist-Jews'",
+
+"PrimaryPerception"
+    : " | Extreme anti-semite; thinks all Jews are responsible for 9/11",
+
+"InUrHiveKickinUrBees"
+    : " | Thinks Jews banned /r/thefappening",
+
+"sinominous"
+    : " | Anti-semite and Holocaust denier",
+
+"dindu_nuffin"
+    : " | Racist anti-semite. [Has been heavily upvoted for Holocaust Denial](http://redd.it/2f7wou).",
+
+"I_WILL_REMIND_THEM"
+    : " | [\"Jews are hated by everyone on this planet and better off dead. I consider them far less than human.\"](http://redd.it/2donjh/)",
+
+"mtersen"
+    : " | [\"Everyday, it becomes clearer and clearer that these jews really are as evil as Hitler described!\"](http://www.reddit.com/r/isrconspiracyracist/comments/2dn936/ircr/cjrc0qu/)",
+
+"foldegrep"
+    : " | [Thinks Hitler was right about the Jews](http://www.reddit.com/r/isrconspiracyracist/comments/2dn936/ircr/cjrc0qu)",
+
+"ValikorWarlock"
+    : " | [\"jews fuck with the economy and kill people\"](http://www.reddit.com/r/isrconspiracyracist/comments/2dn936/ircr/cjrc0qu)",
+
+"Oh_No_You_Did_Not"
+    : " | Proud anti-semite",
+    
+"the_no_bro"
+    : " | Blatant anti-semite",
+    
+"Jalapenile"
+    : " | Blatant anti-semite",
+    
+
+
 }
 
 
