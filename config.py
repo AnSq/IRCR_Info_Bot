@@ -42,21 +42,15 @@ SPECIALS = {
 "4to4"
     : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
 
-"4to3"
-    : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
-
-"4too"
-    : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2F4to4)",
-
 "SovereignMan"
     : " | Former moderator of /r/conspiracy",
-    
+
 "MayMayPoster"
     : " | Alt account of /u/European88",
-    
+
 "TheCanticleer"
     : " | Unashamed anti-semite, blames Jews for 9/11",
-   
+
 "KlausDuJong"
     : " | [White supremacist. Literally fantasizes about genociding Jews; blames them for 9/11](http://redd.it/2eob41)",
 
@@ -92,15 +86,12 @@ SPECIALS = {
 
 "Oh_No_You_Did_Not"
     : " | Proud anti-semite",
-    
+
 "the_no_bro"
     : " | Blatant anti-semite",
-    
+
 "Jalapenile"
     : " | Blatant anti-semite",
-    
-
-
 }
 
 

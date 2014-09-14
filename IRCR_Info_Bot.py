@@ -18,6 +18,7 @@ import config
 # undocumented feature: use --ircr flag to switch to scanning /r/ircr
 if "--ircr" in sys.argv:
     config.SUBREDDIT = "ircr"
+    config.WAIT = 5
 
 
 class DatabaseAccess (object):
@@ -526,6 +527,9 @@ def make_special_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " 
     if normal in config.SPECIALS:
         if p: print '|\t\tSpecial'
         info += config.SPECIALS[normal].replace('$username$', normal)
+    if username.lower() != normal.lower() and username in config.SPECIALS:
+		if p: print '|\t\tAlias special'
+		info += config.SPECIALS[username].replace('$username$', username)
     return info
 
 
