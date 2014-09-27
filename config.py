@@ -22,8 +22,10 @@ ALIASES = [
 	["4to4", "4to3", "4to2", "4too", "4to6"],
 	["Jewish_NeoCon", "Jewish_NeoCon2"],
 	["Enochx", "Aerioch"],
-	["European88", "MayMayPoster"],
-	["KlausDuJong", "AbsolomVonWret"]
+	["European88", "MayMayPoster", "Kill_All_Pakis", "gas-the-kikes"],
+	["KlausDuJong", "AbsolomVonWret", "TheCanticleer", "HideoYamaguchi"],
+	["Antiochus88", "Indra-Varuna"],
+	["baller222", "theskunk90", "bogota79", "gregster3"]
 ]
 
 
