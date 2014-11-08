@@ -25,7 +25,7 @@ ALIASES = [
 	["European88", "MayMayPoster", "Kill_All_Pakis", "gas-the-kikes"],
 	["KlausDuJong", "AbsolomVonWret", "TheCanticleer", "HideoYamaguchi"],
 	["Antiochus88", "Indra-Varuna"],
-	["baller222", "theskunk90", "bogota79", "gregster3"],
+	["baller222", "theskunk90", "bogota79", "gregster3", "jarmin9"],
 	["iamagod____", "iamagod___", "iamagod__"]
 ]
 
