@@ -479,6 +479,7 @@ def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (
         try:
             user = r.get_redditor(username, fetch=True)
             info = info.replace(username, user.name) # standardize capitalization
+            info = "[{0}](http://reddit.com{0})".format(info)
             info += config.NORMALSTRING.replace('$username$', username)
             break
         except Exception as e:
