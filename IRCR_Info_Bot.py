@@ -545,24 +545,24 @@ def make_mod_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (man
     return info
 
 
-def scan_title(title):
+def scan_post(text):
     """extract a set of usernames from a string"""
     users = set()
     CHARS = string.digits + string.ascii_letters + '-_'
-    index = title.find(config.TRIGGERSTRING)
+    index = text.find(config.TRIGGERSTRING)
     while index != -1:
         start = index + len(config.TRIGGERSTRING)
         end = start
 
-        if end < len(title):
-            while end < len(title) and title[end] in CHARS:
+        if end < len(text):
+            while end < len(text) and text[end] in CHARS:
                 end += 1
 
-            if len(title[start:end]) > 0:
-                users.add(title[start:end])
+            if len(text[start:end]) > 0:
+                users.add(text[start:end])
 
-        title = title[start:]
-        index = title.find(config.TRIGGERSTRING)
+        text = text[start:]
+        index = text.find(config.TRIGGERSTRING)
     return users
 
 
@@ -578,11 +578,11 @@ def make_comment(remarks):
     return header + "\n\n- " + "\n\n- ".join(remarks) + footer
 
 
-def text_to_comment(ptitle, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
-    """generate a comment from a post title"""
+def text_to_comment(text, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
+    """generate a comment from a post"""
     # default reddit instance provided for convenience in terminal. Don't use it in scripts.
 
-    names = [n.lower() for n in scan_title(ptitle)]
+    names = [n.lower() for n in scan_post(text)]
     names.sort()
 
     remarks = []
@@ -623,7 +623,7 @@ def scanSub(r, db, pg, testmode, mod_list):
     subreddit = r.get_subreddit(config.SUBREDDIT)
     posts = subreddit.get_new(limit=config.MAXPOSTS)
     for post in posts:
-        ptitle = "%s %s" % (post.link_flair_text, post.title)
+        text = "%s %s %s" % (post.link_flair_text, post.title, post.selftext)
         try:
             pauthor = post.author.name
         except AttributeError:
@@ -635,9 +635,11 @@ def scanSub(r, db, pg, testmode, mod_list):
 
                 data = (post.link_flair_text, post.title, pid, pauthor)
                 found_string = u"\n| Found post [%s] \"%s\" (http://redd.it/%s) by /u/%s" % data
+                if post.selftext:
+                    found_string += " (Self post)"
                 print found_string.encode("ascii", "backslashreplace")
 
-                comment, names = text_to_comment(ptitle, mod_list, r, True, db, pg)
+                comment, names = text_to_comment(text, mod_list, r, True, db, pg)
 
                 db.increment_names(names)
 
