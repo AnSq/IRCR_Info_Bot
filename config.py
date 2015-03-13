@@ -23,11 +23,13 @@ ALIASES = [
 	["Jewish_NeoCon", "Jewish_NeoCon2"],
 	["Enochx", "Aerioch"],
 	["European88", "MayMayPoster", "Kill_All_Pakis", "gas-the-kikes"],
-	["KlausDuJong", "AbsolomVonWret", "TheCanticleer", "HideoYamaguchi"], # Martin Timothy
+	["KlausDuJong", "AbsolomVonWret", "TheCanticleer", "HideoYamaguchi", "CaptainRalph", "ToquersCafe", "MelvinMole", "TheCantalabrian", "JohnnyJingleballs"], # Martin Timothy
 	["Antiochus88", "Indra-Varuna"],
 	["baller222", "theskunk90", "bogota79", "gregster3", "jarmin9", "lexicon80", "arabiaz", "jackson990"], # "Precepts of the Talmud" guy
-	["iamagod____", "iamagod___", "iamagod__"],
-	["eagleshigh", "EaglezhighH8H8", "Detroit_Safari"]
+	["iamagod_____", "iamagod____", "iamagod___", "iamagod__"],
+	["eagleshigh", "EaglezhighH8H8"],
+	["Detroit_Safari", "NolanChancellor", "Nolan_Chancellor"],
+	["AlphamaxHD", "MossadOwnsPOTUS", "AnonBTCShoppin", "YHWHisSatan", "LOLHOLOHOAX"]
 ]
 
 
@@ -58,11 +60,8 @@ SPECIALS = {
 "MayMayPoster"
     : " | Alt account of /u/European88",
 
-"TheCanticleer"
-    : " | Unashamed anti-semite, blames Jews for 9/11",
-
 "KlausDuJong"
-    : " | [White supremacist. Literally fantasizes about genociding Jews; blames them for 9/11](http://redd.it/2eob41)",
+    : " | [Martin Timothy alt](http://redd.it/2ux5ym). [Fantasizes about personally gassing Jews](http://redd.it/2eob41).",
 
 "Flytape"
     : " | Pro-racism mod of /r/conspiracy",
@@ -102,6 +101,9 @@ SPECIALS = {
 
 "Jalapenile"
     : " | Blatant anti-semite",
+    
+"RedditRevisionist"
+    : " | [neo-Nazi](http://www.reddit.com/r/isrconspiracyracist/comments/2ykqgx/just_putting_these_two_together_since_the/)",
 }
 
 
