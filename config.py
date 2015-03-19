@@ -29,7 +29,8 @@ ALIASES = [
 	["iamagod_____", "iamagod____", "iamagod___", "iamagod__"],
 	["eagleshigh", "EaglezhighH8H8"],
 	["Detroit_Safari", "NolanChancellor", "Nolan_Chancellor"],
-	["AlphamaxHD", "MossadOwnsPOTUS", "AnonBTCShoppin", "YHWHisSatan", "LOLHOLOHOAX"]
+	["AlphamaxHD", "MossadOwnsPOTUS", "AnonBTCShoppin", "YHWHisSatan", "LOLHOLOHOAX"],
+	["RedditRevisionist", "user1060", "user1061", "user1062", "user1065", "user1066", "user1067", "HDNWdotcom", "NankingThrowaway", "AHdidnothingwrong", "user1064", "user1069"]
 ]
 
 
@@ -101,7 +102,7 @@ SPECIALS = {
 
 "Jalapenile"
     : " | Blatant anti-semite",
-    
+
 "RedditRevisionist"
     : " | [neo-Nazi](http://www.reddit.com/r/isrconspiracyracist/comments/2ykqgx/just_putting_these_two_together_since_the/)",
 }
