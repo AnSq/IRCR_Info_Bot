@@ -23,7 +23,7 @@ ALIASES = [
 	["Jewish_NeoCon", "Jewish_NeoCon2"],
 	["Enochx", "Aerioch"],
 	["European88", "MayMayPoster", "Kill_All_Pakis", "gas-the-kikes"],
-	["KlausDuJong", "AbsolomVonWret", "TheCanticleer", "HideoYamaguchi", "CaptainRalph", "ToquersCafe", "MelvinMole", "TheCantalabrian", "JohnnyJingleballs"], # Martin Timothy
+	["KlausDuJong", "AbsolomVonWret", "TheCanticleer", "HideoYamaguchi", "CaptainRalph", "ToquersCafe", "MelvinMole", "TheCantalabrian", "JohnnyJingleballs","JonApplethorn","CaptainRalph","TankTinker","ToquersCafe"], # Martin Timothy
 	["Antiochus88", "Indra-Varuna"],
 	["baller222", "theskunk90", "bogota79", "gregster3", "jarmin9", "lexicon80", "arabiaz", "jackson990"], # "Precepts of the Talmud" guy
 	["iamagod_____", "iamagod____", "iamagod___", "iamagod__"],
