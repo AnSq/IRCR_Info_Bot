@@ -623,7 +623,7 @@ def scanSub(r, db, pg, testmode, mod_list):
     subreddit = r.get_subreddit(config.SUBREDDIT)
     posts = subreddit.get_new(limit=config.MAXPOSTS)
     for post in posts:
-        text = "%s %s %s" % (post.link_flair_text, post.title, post.selftext)
+        text = "%s %s" % (post.title, post.selftext)
         try:
             pauthor = post.author.name
         except AttributeError:
