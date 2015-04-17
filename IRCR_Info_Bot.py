@@ -613,7 +613,7 @@ def make_searchquery(names):
     """construct a search query for all the given names"""
     q = ""
     for name in names:
-        q += "$username$+OR+flair%3A%27$username$%27+OR+".replace("$username$", name)
+        q += "%2Fu%2F$username$+OR+".replace("$username$", name)
     return q[:-4] # chop off final "+OR+"
 
 
