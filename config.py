@@ -26,11 +26,11 @@ ALIASES = [
 	["KlausDuJong", "AbsolomVonWret", "TheCanticleer", "HideoYamaguchi", "CaptainRalph", "ToquersCafe", "MelvinMole", "TheCantalabrian", "JohnnyJingleballs","JonApplethorn","CaptainRalph","TankTinker","ToquersCafe"], # Martin Timothy
 	["Antiochus88", "Indra-Varuna"],
 	["baller222", "theskunk90", "bogota79", "gregster3", "jarmin9", "lexicon80", "arabiaz", "jackson990"], # "Precepts of the Talmud" guy
-	["iamagod_____", "iamagod____", "iamagod___", "iamagod__"],
+	["iamagod______","iamagod_____", "iamagod____", "iamagod___", "iamagod__"],
 	["eagleshigh", "EaglezhighH8H8"],
 	["Detroit_Safari", "NolanChancellor", "Nolan_Chancellor"],
 	["AlphamaxHD", "MossadOwnsPOTUS", "AnonBTCShoppin", "YHWHisSatan", "LOLHOLOHOAX"],
-	["RedditRevisionist", "user1060", "user1065", "user1067", "HDNWdotcom", "NankingThrowaway", "AHdidnothingwrong"]
+	["RedditRevisionist", "user1060", "user1065", "user1067", "HDNWdotcom", "NankingThrowaway", "AHdidnothingwrong","holocaustisholohoax","Boredquestioner","JUSTASKINGQUESTlONS","davesimmonds3"]
 ]
 
 
