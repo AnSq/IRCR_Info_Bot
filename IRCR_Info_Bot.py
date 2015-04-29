@@ -255,12 +255,17 @@ class CommentScanner (threading.Thread):
         """submit a reply to a parent comment"""
         if not self.testmode:
             print "! Posting comment..."
-            newcomment = parent.reply(comment)
-            self.db.commit()
-            print "! Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
-            if config.DISTINGUISHCOMMENT:
-                newcomment.distinguish()
-                print "! Comment distinguished."
+            try
+                newcomment = parent.reply(comment)
+                self.db.commit()
+                print "! Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
+                if config.DISTINGUISHCOMMENT:
+                    newcomment.distinguish()
+                    print "! Comment distinguished."
+            except:
+                raise
+            finally:
+                self.db.commit()
         else:
             print "! Comment not posted (bot is running in testing mode)."
         print
@@ -268,10 +273,14 @@ class CommentScanner (threading.Thread):
 
 
 def print_exception(e):
-    print "\n*** ERROR: %s: %s" % (type(e).__name__, str(e))
-    if not (type(e).__name__ == "HTTPError" and str(e)[:3] == "504"):
-        # It gets so many 504s on Heroku and I don't want to hear about it.
-        print "--------------------------------"
+    http504 = (type(e).__name__ == "HTTPError" and str(e)[:3] == "504") # It gets so many 504s on Heroku and I don't want to hear about it.
+
+    if not http504:
+        print "\n--------------------------------"
+
+    print "*** ERROR: %s: %s" % (type(e).__name__, str(e))
+
+    if not http504:
         traceback.print_exc()
         print "--------------------------------\n"
 
@@ -603,12 +612,17 @@ def post_comment(post, comment, db, testmode=False):
     """submit a comment on a post"""
     if not testmode:
         print "| Posting comment..."
-        newcomment = post.add_comment(comment)
-        db.commit()
-        print "| Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
-        if config.DISTINGUISHCOMMENT:
-            newcomment.distinguish()
-            print "| Comment distinguished."
+        try:
+            newcomment = post.add_comment(comment)
+            db.commit()
+            print "| Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
+            if config.DISTINGUISHCOMMENT:
+                newcomment.distinguish()
+                print "| Comment distinguished."
+        except:
+            raise
+        finally:
+            db.commit()
     else:
         print "| Comment not posted (bot is running in testing mode)."
     print

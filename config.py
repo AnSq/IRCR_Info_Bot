@@ -4,11 +4,11 @@
 
 
 # Bot version. This goes in the user agent. Try to make sure different versions of the code that go live have different numbers
-VERSION = "1.7.0"
+VERSION = "1.7.2"
 
 
 # short description of what the bot does. For example "/u/GoldenSights' Newsletter bot"
-USERAGENT = "/u/IRCR_Info_Bot v%s, controlled by the moderators of /r/isrconspiracyracist" % VERSION
+USERAGENT = "IRCR Info Scanner v%s, controlled by the moderators of /r/isrconspiracyracist" % VERSION
 
 
 # sub or list of subs to scan for new posts. For a single sub, use "sub1". For multiple subreddits, use "sub1+sub2+sub3+..."
