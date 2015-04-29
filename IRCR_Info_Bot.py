@@ -255,7 +255,7 @@ class CommentScanner (threading.Thread):
         """submit a reply to a parent comment"""
         if not self.testmode:
             print "! Posting comment..."
-            try
+            try:
                 newcomment = parent.reply(comment)
                 self.db.commit()
                 print "! Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
