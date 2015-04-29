@@ -236,7 +236,7 @@ class CommentScanner (threading.Thread):
                     found_string = u"\n! Found comment (%s) by /u/%s" % (link, author)
                     print found_string.encode("ascii", "backslashreplace")
 
-                    reply, names = text_to_comment(text, self.mod_list, self.r, True, self.db, self.pg)
+                    reply, names = text_to_comment(text, self.mod_list, self.r, True, self.db, self.pg, [config.TRIGGERSTRING, "u/"])
 
                     # Don't increment counts from summons (http://www.reddit.com/comments/2amark/-/cixzt9k?context=3)
 
@@ -546,13 +546,13 @@ def make_mod_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (man
     return info
 
 
-def scan_post(text):
+def scan_post(text, trigger=config.TRIGGERSTRING):
     """extract a set of usernames from a string"""
     users = set()
     CHARS = string.digits + string.ascii_letters + '-_'
-    index = text.find(config.TRIGGERSTRING)
+    index = text.find(trigger)
     while index != -1:
-        start = index + len(config.TRIGGERSTRING)
+        start = index + len(trigger)
         end = start
 
         if end < len(text):
@@ -563,7 +563,7 @@ def scan_post(text):
                 users.add(text[start:end])
 
         text = text[start:]
-        index = text.find(config.TRIGGERSTRING)
+        index = text.find(trigger)
     return users
 
 
@@ -579,11 +579,15 @@ def make_comment(remarks):
     return header + "\n\n- " + "\n\n- ".join(remarks) + footer
 
 
-def text_to_comment(text, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
+def text_to_comment(text, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False, triggers=[config.TRIGGERSTRING]):
     """generate a comment from a post"""
     # default reddit instance provided for convenience in terminal. Don't use it in scripts.
 
-    names = [n.lower() for n in scan_post(text)]
+    names_set = set()
+    for t in triggers:
+        names_set |= scan_post(text, t)
+
+    names = [n.lower() for n in names_set]
     names.sort()
 
     remarks = []

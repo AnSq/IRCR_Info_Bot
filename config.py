@@ -4,7 +4,7 @@
 
 
 # Bot version. This goes in the user agent. Try to make sure different versions of the code that go live have different numbers
-VERSION = "1.6.3"
+VERSION = "1.7.0"
 
 
 # short description of what the bot does. For example "/u/GoldenSights' Newsletter bot"
