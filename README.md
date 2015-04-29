@@ -30,7 +30,7 @@ The argument parsing isn't all that sophisticated, so, for example, `-mn` is *no
 
 ## Summoning
 
-The bot can be summoned to post information about additional users not in the title by posting a comment beginning with “+/u/*[bot-username]*”. Everything after this is scanned for usernames exactly the same way submission titles are.
+The bot can be summoned to post information about additional users not in the title by posting a comment beginning with “+/u/*[bot-username]*” or “+ircrbot”. Everything after this is scanned for usernames exactly the same way submission titles are.
 
 This only works in subreddits the bot is scanning submission in, as defined in `config.SUBREDDIT`.
 

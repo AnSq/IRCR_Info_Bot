@@ -217,15 +217,16 @@ class CommentScanner (threading.Thread):
             username = os.environ["IRCR_USERNAME"]
         except:
             pass
-        trigger = "+/u/" + username.lower()
+        triggers = ["+/u/" + username.lower(), "+ircrbot"]
 
-        if comment.body[:len(trigger)].lower() == trigger:
+        matching = [comment.body[:len(t)].lower() == t for t in triggers]
+        if any(matching):
             id = comment.id
             try:
                 if not self.db.is_oldcomment(id):
                     self.db.add_oldcomment(id)
 
-                    text = comment.body[len(trigger):]
+                    text = comment.body[len(triggers[matching.index(True)]):]
                     try:
                         author = comment.author.name
                     except AttributeError:
@@ -633,8 +634,8 @@ def scanSub(r, db, pg, testmode, mod_list):
             if not db.is_oldpost(pid):
                 db.add_oldpost(pid)
 
-                data = (post.link_flair_text, post.title, pid, pauthor)
-                found_string = u"\n| Found post [%s] \"%s\" (http://redd.it/%s) by /u/%s" % data
+                data = (post.title, pid, pauthor)
+                found_string = u"\n| Found post \"%s\" (http://redd.it/%s) by /u/%s" % data
                 if post.selftext:
                     found_string += " (Self post)"
                 print found_string.encode("ascii", "backslashreplace")
