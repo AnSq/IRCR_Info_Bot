@@ -335,9 +335,9 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
         return mod_list
 
     mod_list = {}
-    i = 1
+    i = 0
     for sub in subs:
-        if p: print "\t%s: /r/%s" % (str(i).rjust(2), sub)
+        if p: print "\tsub %s" % (str(i).rjust(2))
         ml = None
         skip = False
         while True:
