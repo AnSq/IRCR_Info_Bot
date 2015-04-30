@@ -472,7 +472,6 @@ def make_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual 
     args = (username, mod_list, r, p, db, pg)
 
     info = make_normal_info(*args)
-    info += make_alias_info(*args)
     info += make_special_info(*args)
     info += make_mod_info(*args)
 
@@ -485,12 +484,27 @@ def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (
     info = config.TRIGGERSTRING + username
     if p: print "|\t" + info
 
+    prevcount = 0
+    alias_list = []
+
     while True:
         try:
             user = r.get_redditor(username, fetch=True)
             info = info.replace(username, user.name) # standardize capitalization
             info = "[{0}](http://reddit.com{0})".format(info)
-            info += config.NORMALSTRING.replace('$username$', username)
+
+            searchquery = "%2Fu%2F" + username
+            alias_list = get_alias_list(username.lower())
+            if len(alias_list) > 0:
+                if p: print "|\t\tAlias"
+
+                if db:
+                    prevcount = db.get_alias_mentions(alias_list)
+
+                if p: print "|\t\t%d previous alias mentions" % prevcount
+                searchquery = make_searchquery(alias_list)
+
+            info += config.NORMALSTRING.replace('$username$', username).replace("$searchquery$", searchquery)
             break
         except Exception as e:
             if type(e).__name__ == "HTTPError" and str(e)[:3] == "404":
@@ -504,30 +518,11 @@ def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (
                 time.sleep(2)
                 continue
 
-    prevcount = 0
-    if db:
+    if db and len(alias_list) == 0:
         prevcount = db.get_mentions(username)
     info = info.replace("$prevcount$", str(prevcount))
-    if p: print "|\t\t%d previous mentions" % prevcount
+    if p and len(alias_list) == 0: print "|\t\t%d previous mentions" % prevcount
 
-    return info
-
-
-def make_alias_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False, db=None, pg=False):
-    """generate remark for aliased usernames, if any"""
-
-    info = ""
-    alias_list = get_alias_list(username.lower())
-    if len(alias_list) > 0:
-        if p: print "|\t\tAlias"
-
-        prevcount = 0
-        if db:
-            prevcount = db.get_alias_mentions(alias_list)
-
-        if p: print "|\t\t%d previous alias mentions" % prevcount
-        searchquery = make_searchquery(alias_list)
-        info += config.ALIAS_REMARK.replace("$searchquery$", searchquery).replace("$prevcount$", str(prevcount))
     return info
 
 
