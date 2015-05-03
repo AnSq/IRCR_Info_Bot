@@ -337,7 +337,7 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
     mod_list = {}
     i = 0
     for sub in subs:
-        if p: print "\tsub %s" % (str(i).rjust(2))
+        subjust = str(i).rjust(2)
         ml = None
         skip = False
         while True:
@@ -346,10 +346,10 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
                 break
             except praw.requests.exceptions.HTTPError as e:
                 if str(e)[:3] == "504":
-                    if p: print "\t\thttp 504"
+                    if p: print "\tsub %s: http 504" % subjust
                     continue #retry until it works
                 elif str(e)[:3] == "403":
-                    if p: print "\t\thttp 403 (private?)"
+                    if p: print "\tsub %s: http 403 (private?)" % subjust
                     # skip subreddit
                     skip = True
                     break
@@ -369,7 +369,7 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
         if skip:
             continue
 
-        if p: print "\t\t" + str(len(ml)) + " mods"
+        if p: print ("\tsub %s: " % subjust) + str(len(ml)).rjust(2) + " mods"
 
         mods = [u.name for u in ml]
         for name in mods:

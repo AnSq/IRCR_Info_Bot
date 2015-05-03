@@ -119,7 +119,7 @@ MOD_REMARK = " | Moderator of $sublist$"
 
 # remark for accounts which are invalid or shadowbanned. $username$ will be replaced by the username automatically
 # $prevcount$ is replaced by the number of previous posts mentioning the user
-DEADUSER = ": [previous /r/ircr posts ($prevcount$)](http://www.reddit.com/r/isrconspiracyracist/search?q=$username$+OR+flair%3A%27$username$%27&restrict_sr=on&sort=relevance&t=all) | Account shadowbanned/deleted"
+DEADUSER = ": [$prevcount$ previous posts](http://www.reddit.com/r/isrconspiracyracist/search?q=%2Fu%2F$username$&restrict_sr=on&sort=relevance&t=all) | Account shadowbanned/deleted"
 
 
 # This will be at the very top of the comment. \n\n creates a new line. Set this to "" if you don't want anything.
