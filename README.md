@@ -41,4 +41,6 @@ You can manually generate a comment based on a list of usernames using the `manu
 
 Run it with `python manual.py [--multi|-m] [users]`.
 
-In order to use the moderator remark feature of the bot, the sctipt has to download the moderator lists first. With reddit's API rules, this can take a while, so the script first trys to load them from a cache. If the cache doesn't exist, it will download the lists and create it. You can manually generate or refresh the cache by running `python get_mod_list.py [--multi|-m]`.
+In order to use the moderator remark feature of the bot, the sctipt has to download the moderator lists first. With reddit's API rules, this can take a while, so the script first trys to load them from a cache. If the cache doesn't exist, it will download the lists and create it. You can manually generate or refresh the cache by running `python get_mod_list.py`.
+
+With Reddit's new quarantine system, the bot can't get the moderators of some subreddits without being manually opted-in to them and logged in. Loggin in for `get_mod_list` works the same as for the main bot. `get_mod_list.py` also accepts the `--nologin` (or `-n`) argument, in which case the mods of quarantined subs won't be loaded, and of course the `--multi` (or `-m`) argument. `manual.py` does not support `--nologin`, so if you want it to use mods of quarantined subs, run `get_mod_list` logged in first to generate the cache.

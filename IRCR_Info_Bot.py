@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-import praw # simple interface to the reddit API, also handles rate limiting of requests
+import praw
 import time
 import string
 import sys
@@ -15,10 +15,12 @@ import threading
 # load settings
 import config
 
+
 # undocumented feature: use --ircr flag to switch to scanning /r/ircr
 if "--ircr" in sys.argv:
     config.SUBREDDIT = "ircr"
     config.WAIT = 5
+    config.SQLITE_FILE = "ircr_testing.sqlite"
 
 
 class DatabaseAccess (object):
@@ -67,7 +69,7 @@ class DatabaseAccess (object):
                 port=url.port
             )
         else:
-            self.conn = self.sqlite3.connect('sql.db')
+            self.conn = self.sqlite3.connect(config.SQLITE_FILE)
 
         print "Connected to database"
         return self.conn
@@ -344,22 +346,34 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
             try:
                 ml = r.get_subreddit(sub).get_moderators()
                 break
-            except praw.requests.exceptions.HTTPError as e:
-                if str(e)[:3] == "504":
-                    if p: print "\tsub %s: http 504" % subjust
-                    continue #retry until it works
-                elif str(e)[:3] == "403":
-                    if p: print "\tsub %s: http 403 (private?)" % subjust
-                    # skip subreddit
-                    skip = True
-                    break
-                else:
-                    # warn and skip on unknown error
-                    print_exception(e)
-                    skip = True
-                    break
+            except praw.errors.Forbidden as e:
+                print "\tsub %s: \tForbidden" % subjust
+                skip = True
+                break
+            except praw.errors.HTTPException as e:
+                print_exception(e)
+
+            ## Changed for praw 3 update. Commented for reference. Will remove later.
+            #except praw.errors.HTTPException as e:
+            #    print str(e)
+            #    print e.message
+            #    if str(e)[:3] == "504":
+            #        if p: print "\tsub %s: http 504" % subjust
+            #        continue #retry until it works
+            #    elif str(e)[:3] == "403":
+            #        if p: print "\tsub %s: http 403 (private?)" % subjust
+            #        # skip subreddit
+            #        skip = True
+            #        break
+            #    else:
+            #        # warn and skip on unknown error
+            #        #print_exception(e)
+            #        skip = True
+            #        break
+
             except Exception as e:
                 # warn and skip on unknown error
+                print e.__module__ + "." + e.__class__.__name__
                 print_exception(e)
                 skip = True
                 break
@@ -506,17 +520,16 @@ def make_normal_info(username, mod_list={}, r=praw.Reddit(config.USERAGENT + " (
 
             info += config.NORMALSTRING.replace('$username$', username).replace("$searchquery$", searchquery)
             break
+        except praw.errors.NotFound as e:
+            # A 404 error means the user was deleted or banned
+            info += config.DEADUSER.replace('$username$', username)
+            if p: print '|\t\tDead'
+            break
         except Exception as e:
-            if type(e).__name__ == "HTTPError" and str(e)[:3] == "404":
-                # A 404 error means the user was deleted or banned
-                info += config.DEADUSER.replace('$username$', username)
-                if p: print '|\t\tDead'
-                break
-            else:
-                # Any other error (notably a 504) means we should try again to get the user
-                print "Error getting user: %s: %s" % (type(e).__name__, str(e))
-                time.sleep(2)
-                continue
+            # Any other error (notably a 504) means we should try again to get the user
+            print "Error getting user: %s: %s" % (type(e).__name__, str(e))
+            time.sleep(2)
+            continue
 
     if db and len(alias_list) == 0:
         prevcount = db.get_mentions(username)

@@ -11,9 +11,12 @@ fname = "mod_list_cache.pickle"
 
 def main(r=None):
     if r == None:
-        multi = len(sys.argv) > 1 and (sys.argv[1]=="-m" or sys.argv[1]=="--multi")
+        multi = "-m" in sys.argv or "--multi" in sys.argv
         r = ircr.reddit_connect(ircr.config.USERAGENT + " (script-manual mod_list loader mode)", multi)
-    multi = len(sys.argv) > 1 and (sys.argv[1]=="-m" or sys.argv[1]=="--multi")
+
+    nologin = "-n" in sys.argv or "--nologin" in sys.argv
+    if not nologin:
+        ircr.login(r)
 
     mod_list = ircr.load_mod_list(ircr.config.SPECIAL_MOD_SUBS, r, True)
 

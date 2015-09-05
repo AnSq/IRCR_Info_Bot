@@ -4,7 +4,7 @@
 
 
 # Bot version. This goes in the user agent. Try to make sure different versions of the code that go live have different numbers
-VERSION = "1.7.3"
+VERSION = "1.7.5"
 
 
 # short description of what the bot does. For example "/u/GoldenSights' Newsletter bot"
@@ -30,7 +30,7 @@ ALIASES = [
 	["eagleshigh", "EaglezhighH8H8"],
 	["Detroit_Safari", "NolanChancellor", "Nolan_Chancellor"],
 	["AlphamaxHD", "MossadOwnsPOTUS", "AnonBTCShoppin", "YHWHisSatan", "LOLHOLOHOAX"],
-	["RedditRevisionist", "user1060", "user1065", "user1067", "HDNWdotcom", "NankingThrowaway", "AHdidnothingwrong","holocaustisholohoax","Boredquestioner","JUSTASKINGQUESTlONS","davesimmonds3"]
+	["RedditRevisionist", "user1060", "user1065", "user1067", "HDNWdotcom", "NankingThrowaway", "AHdidnothingwrong", "holocaustisholohoax", "Boredquestioner", "JUSTASKINGQUESTlONS", "davesimmonds3"]
 ]
 
 
@@ -109,7 +109,7 @@ SPECIALS = {
 
 
 # list of subreddits to add special remarks to mods of
-SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi", "GoEbola", 'Apefrica', 'Ausfailia', 'Ben_Garrison', 'BritishNationalParty', 'Detoilet', 'Londonistan', 'N1GGERS', 'NegroFree', 'NiggerCartoons', 'NiggerMythology', 'NiggersGIFs', 'NiggersNews', 'NiggersTIL', 'RacistNiggers', 'TNB', 'TheGoyimKnow', 'TheProjects', 'TrayvonMartin', 'UKistan', 'WTFniggers', 'WatchNiggersDie', 'WhiteIdentity', 'WhiteRights1', 'chimpmusic', 'farright', 'ferguson', 'funnyniggers', 'niggerspics', 'polacks', 'polfacts', 'whitebeauty', "CoonTown", "GasTheKikes"]
+SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi", "GoEbola", 'Apefrica', 'Ausfailia', 'Ben_Garrison', 'BritishNationalParty', 'Detoilet', 'Londonistan', 'N1GGERS', 'NegroFree', 'NiggerCartoons', 'NiggerMythology', 'NiggersGIFs', 'NiggersNews', 'NiggersTIL', 'RacistNiggers', 'TNB', 'TheGoyimKnow', 'TheProjects', 'TrayvonMartin', 'UKistan', 'WTFniggers', 'WhiteIdentity', 'WhiteRights1', 'chimpmusic', 'farright', 'ferguson', 'funnyniggers', 'niggerspics', 'polacks', 'polfacts', 'whitebeauty']
 
 
 # extra remark that mods of subs in SPECIAL_MOD_SUBS get.
@@ -151,8 +151,11 @@ TRIGGERSTRING = '/u/'
 
 
 # This is how many posts you want to retrieve all at once. PRAW can download 100 at a time.
-MAXPOSTS = 10
+MAXPOSTS = 25
 
 
 # This is how many seconds you will wait between cycles. The bot is completely inactive during this time.
 WAIT = 30
+
+
+SQLITE_FILE = "database.sqlite"
