@@ -227,25 +227,6 @@ def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=Fa
                 break
             except praw.errors.HTTPException as e:
                 print_exception(e)
-
-            ## Changed for praw 3 update. Commented for reference. Will remove later.
-            #except praw.errors.HTTPException as e:
-            #    print str(e)
-            #    print e.message
-            #    if str(e)[:3] == "504":
-            #        if p: print "\tsub %s: http 504" % subjust
-            #        continue #retry until it works
-            #    elif str(e)[:3] == "403":
-            #        if p: print "\tsub %s: http 403 (private?)" % subjust
-            #        # skip subreddit
-            #        skip = True
-            #        break
-            #    else:
-            #        # warn and skip on unknown error
-            #        #print_exception(e)
-            #        skip = True
-            #        break
-
             except Exception as e:
                 # warn and skip on unknown error
                 print e.__module__ + "." + e.__class__.__name__
@@ -646,11 +627,6 @@ def main(r, db, pg, testmode, mod_list):
 if __name__ == "__main__":
     try:
         r, db, pg, testmode, mod_list, multi, nologin, oauth = setup()
-
-        #msg_scan = CommentScanner(testmode, pg, multi, nologin, mod_list)
-        #msg_scan.daemon = True
-        #msg_scan.start()
-
         main(r, db, pg, testmode, mod_list)
 
     except KeyboardInterrupt:
