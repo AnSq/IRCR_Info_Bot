@@ -2,6 +2,7 @@
 
 
 import praw
+import OAuth2Util
 import time
 import string
 import sys
@@ -186,9 +187,7 @@ class CommentScanner (threading.Thread):
         self.r = reddit_connect(config.USERAGENT, self.multi)
 
         if not nologin:
-            login(self.r)
-
-        self.mods = set([u.name for u in r.get_subreddit(config.SUBREDDIT).get_moderators()])
+            self.oauth = login(self.r, "oauth_CommentScanner.ini")
 
 
     def scan(self):
@@ -300,27 +299,38 @@ def reddit_connect(useragent, multi=False):
     return r
 
 
-def login(r):
+def login(r, configfile="oauth.ini"):
     """log in to reddit"""
 
-    testmode = False
-
-    # attempt to load uname/pass from environment
     try:
-        USERNAME = os.environ["IRCR_USERNAME"]
-        PASSWORD = os.environ["IRCR_PASSWORD"]
-    except:
-        print "No username/password defined."
+        oauth = OAuth2Util.OAuth2Util(r, configfile=configfile)
+        oauth.refresh(force=True)
+        print "Logged in as /u/" + r.get_me().name
+        return oauth
+    except Exception as e:
+        print "Failed to log in:"
+        print_exception(e)
+        print "Exiting"
         sys.exit()
 
-    try:
-        r.login(USERNAME, PASSWORD)
-        print "Logged in as /u/" + USERNAME
-    except praw.errors.InvalidUserPass as e:
-        print "Wrong password. Continuing in testing mode."
-        testmode = True
-
-    return testmode
+    #testmode = False
+    #
+    ## attempt to load uname/pass from environment
+    #try:
+    #    USERNAME = os.environ["IRCR_USERNAME"]
+    #    PASSWORD = os.environ["IRCR_PASSWORD"]
+    #except:
+    #    print "No username/password defined."
+    #    sys.exit()
+    #
+    #try:
+    #    r.login(USERNAME, PASSWORD)
+    #    print "Logged in as /u/" + USERNAME
+    #except praw.errors.InvalidUserPass as e:
+    #    print "Wrong password. Continuing in testing mode."
+    #    testmode = True
+    #
+    #return testmode
 
 
 def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
@@ -422,12 +432,13 @@ def setup():
 
 
     # login
+    oauth = None
     nologin = False
     if "--nologin" in sys.argv or "-n" in sys.argv:
         nologin = True
 
     if not nologin:
-        testmode |= login(r)
+        oauth = login(r, "oauth_main.ini")
     else:
         print "Not logging in."
         testmode = True
@@ -444,7 +455,7 @@ def setup():
     else:
         print "Running in live mode. Bot will post comments."
 
-    return (r, db, pg, testmode, mod_list, multi, nologin)
+    return (r, db, pg, testmode, mod_list, multi, nologin, oauth)
 
 
 def make_sublist(subs):
@@ -644,7 +655,7 @@ def make_searchquery(names):
     return q[:-4] # chop off final "+OR+"
 
 
-def scanSub(r, db, pg, testmode, mod_list):
+def scanSub(r, oauth, db, pg, testmode, mod_list):
     """scan post titles and post comments"""
 
     subreddit = r.get_subreddit(config.SUBREDDIT)
@@ -681,11 +692,11 @@ def scanSub(r, db, pg, testmode, mod_list):
             db.commit()
 
 
-def main(r, db, pg, testmode, mod_list):
+def main(r, oauth, db, pg, testmode, mod_list):
     """continuously scan and post comments"""
     while True:
         try:
-            scanSub(r, db, pg, testmode, mod_list)
+            scanSub(r, oauth, db, pg, testmode, mod_list)
         except Exception as e:
             print_exception(e)
         db.commit()
@@ -694,13 +705,13 @@ def main(r, db, pg, testmode, mod_list):
 
 if __name__ == "__main__":
     try:
-        r, db, pg, testmode, mod_list, multi, nologin = setup()
+        r, db, pg, testmode, mod_list, multi, nologin, oauth = setup()
 
         msg_scan = CommentScanner(testmode, pg, multi, nologin, mod_list)
         msg_scan.daemon = True
         msg_scan.start()
 
-        main(r, db, pg, testmode, mod_list)
+        main(r, oauth, db, pg, testmode, mod_list)
 
     except KeyboardInterrupt:
         print "\nExit"
