@@ -157,122 +157,6 @@ class DatabaseAccess (object):
 
 
 
-class CommentScanner (threading.Thread):
-    """performs actions based on comments"""
-
-    def __init__(self, testmode, pg, multi, nologin, mod_list):
-        """create thread"""
-
-        threading.Thread.__init__(self)
-
-        self.testmode = testmode
-        self.pg = pg
-        self.multi = multi
-        self.nologin = nologin
-        self.mod_list = mod_list
-
-
-    def run(self):
-        """thread contents"""
-        self.setup()
-        self.scan()
-
-
-    def setup(self):
-        """connect to database and logging in to reddit"""
-
-        print "Initializing CommentScanner"
-
-        self.db = DatabaseAccess(self.pg)
-        self.r = reddit_connect(config.USERAGENT, self.multi)
-
-        if not nologin:
-            self.oauth = login(self.r, "oauth_CommentScanner.ini")
-
-
-    def scan(self):
-        """scan comments"""
-        print "Starting CommentScanner"
-
-        # store seen comments in memory for faster processing
-        # no sense wasting space making it persistent though
-        # handled comments already persist
-        seen = set()
-
-        while True:
-            try:
-                generator = r.get_subreddit(config.SUBREDDIT).get_comments(limit=100)
-                for comment in generator:
-                    seen.add(comment.id)
-                    self.handle(comment)
-                time.sleep(config.WAIT)
-            except Exception as e:
-                print_exception(e)
-
-
-    def handle(self, comment):
-        """do stuff with a comment"""
-
-        username = "ircr"
-        try:
-            username = os.environ["IRCR_USERNAME"]
-        except:
-            pass
-        triggers = ["+/u/" + username.lower(), "+ircrbot"]
-
-        matching = [comment.body[:len(t)].lower() == t for t in triggers]
-        if any(matching):
-            id = comment.id
-            try:
-                if not self.db.is_oldcomment(id):
-                    self.db.add_oldcomment(id)
-
-                    text = comment.body[len(triggers[matching.index(True)]):]
-                    try:
-                        author = comment.author.name
-                    except AttributeError:
-                        author = "[deleted]"
-
-                    link = "http://www.reddit.com/comments/%s/-/%s" % (comment.link_id[3:], comment.id)
-                    found_string = u"\n! Found comment (%s) by /u/%s" % (link, author)
-                    print found_string.encode("ascii", "backslashreplace")
-
-                    reply, names = text_to_comment(text, self.mod_list, self.r, True, self.db, self.pg, [config.TRIGGERSTRING, "u/"])
-
-                    # Don't increment counts from summons (http://www.reddit.com/comments/2amark/-/cixzt9k?context=3)
-
-                    if len(names) > 0:
-                        self.post_reply(comment, reply)
-                    else:
-                        print "!\tNo users mentioned in comment.\n"
-            except:
-                self.db.rollback()
-                raise
-            finally:
-                self.db.commit()
-
-
-    def post_reply(self, parent, comment):
-        """submit a reply to a parent comment"""
-        if not self.testmode:
-            print "! Posting comment..."
-            try:
-                newcomment = parent.reply(comment)
-                self.db.commit()
-                print "! Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
-                if config.DISTINGUISHCOMMENT:
-                    newcomment.distinguish()
-                    print "! Comment distinguished."
-            except:
-                raise
-            finally:
-                self.db.commit()
-        else:
-            print "! Comment not posted (bot is running in testing mode)."
-        print
-
-
-
 def print_exception(e):
     http504 = (type(e).__name__ == "HTTPError" and str(e)[:3] == "504") # It gets so many 504s on Heroku and I don't want to hear about it.
 
@@ -312,25 +196,6 @@ def login(r, configfile="oauth.ini"):
         print_exception(e)
         print "Exiting"
         sys.exit()
-
-    #testmode = False
-    #
-    ## attempt to load uname/pass from environment
-    #try:
-    #    USERNAME = os.environ["IRCR_USERNAME"]
-    #    PASSWORD = os.environ["IRCR_PASSWORD"]
-    #except:
-    #    print "No username/password defined."
-    #    sys.exit()
-    #
-    #try:
-    #    r.login(USERNAME, PASSWORD)
-    #    print "Logged in as /u/" + USERNAME
-    #except praw.errors.InvalidUserPass as e:
-    #    print "Wrong password. Continuing in testing mode."
-    #    testmode = True
-    #
-    #return testmode
 
 
 def load_mod_list(subs, r=praw.Reddit(config.USERAGENT + " (manual mode)"), p=False):
@@ -647,6 +512,70 @@ def post_comment(post, comment, db, testmode=False):
     print
 
 
+def post_reply(parent, comment, db, testmode=False):
+    """submit a reply to a parent comment.
+    Part of comment scanner."""
+    if not testmode:
+        print "! Posting comment..."
+        try:
+            newcomment = parent.reply(comment)
+            db.commit()
+            print "! Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
+            if config.DISTINGUISHCOMMENT:
+                newcomment.distinguish()
+                print "! Comment distinguished."
+        except:
+            raise
+        finally:
+            db.commit()
+    else:
+        print "! Comment not posted (bot is running in testing mode)."
+    print
+
+
+def handle_comment(comment, r, db, mod_list, pg):
+    """do stuff with a comment.
+    Part of comment scanner."""
+
+    username = "ircr"
+    try:
+        username = os.environ["IRCR_USERNAME"]
+    except:
+        pass
+    triggers = ["+/u/" + username.lower(), "+ircrbot"]
+
+    matching = [comment.body[:len(t)].lower() == t for t in triggers]
+    if any(matching):
+        id = comment.id
+        try:
+            if not db.is_oldcomment(id):
+                db.add_oldcomment(id)
+
+                text = comment.body[len(triggers[matching.index(True)]):]
+                try:
+                    author = comment.author.name
+                except AttributeError:
+                    author = "[deleted]"
+
+                link = "http://www.reddit.com/comments/%s/-/%s" % (comment.link_id[3:], comment.id)
+                found_string = u"\n! Found comment (%s) by /u/%s" % (link, author)
+                print found_string.encode("ascii", "backslashreplace")
+
+                reply, names = text_to_comment(text, mod_list, r, True, db, pg, [config.TRIGGERSTRING, "u/"])
+
+                # Don't increment counts from summons (http://www.reddit.com/comments/2amark/-/cixzt9k?context=3)
+
+                if len(names) > 0:
+                    post_reply(comment, reply, db)
+                else:
+                    print "!\tNo users mentioned in comment.\n"
+        except:
+            db.rollback()
+            raise
+        finally:
+            db.commit()
+
+
 def make_searchquery(names):
     """construct a search query for all the given names"""
     q = ""
@@ -655,7 +584,7 @@ def make_searchquery(names):
     return q[:-4] # chop off final "+OR+"
 
 
-def scanSub(r, oauth, db, pg, testmode, mod_list):
+def scan_subreddit(r, db, pg, testmode, mod_list):
     """scan post titles and post comments"""
 
     subreddit = r.get_subreddit(config.SUBREDDIT)
@@ -692,11 +621,22 @@ def scanSub(r, oauth, db, pg, testmode, mod_list):
             db.commit()
 
 
-def main(r, oauth, db, pg, testmode, mod_list):
+def scan_comments(r, db, mod_list, pg):
+    try:
+        generator = r.get_subreddit(config.SUBREDDIT).get_comments(limit=100)
+        for comment in generator:
+            handle_comment(comment, r, db, mod_list, pg)
+        time.sleep(config.WAIT)
+    except Exception as e:
+        print_exception(e)
+
+
+def main(r, db, pg, testmode, mod_list):
     """continuously scan and post comments"""
     while True:
         try:
-            scanSub(r, oauth, db, pg, testmode, mod_list)
+            scan_subreddit(r, db, pg, testmode, mod_list)
+            scan_comments(r, db, mod_list, pg)
         except Exception as e:
             print_exception(e)
         db.commit()
@@ -707,11 +647,11 @@ if __name__ == "__main__":
     try:
         r, db, pg, testmode, mod_list, multi, nologin, oauth = setup()
 
-        msg_scan = CommentScanner(testmode, pg, multi, nologin, mod_list)
-        msg_scan.daemon = True
-        msg_scan.start()
+        #msg_scan = CommentScanner(testmode, pg, multi, nologin, mod_list)
+        #msg_scan.daemon = True
+        #msg_scan.start()
 
-        main(r, oauth, db, pg, testmode, mod_list)
+        main(r, db, pg, testmode, mod_list)
 
     except KeyboardInterrupt:
         print "\nExit"
