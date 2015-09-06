@@ -5,11 +5,8 @@ insert.py
 auth.py
 oauth.txt
 oauth.ini
-oauth_CommentScanner.ini
-oauth_main.ini
 
 # persistent storage
-sql.db
 *.pickle
 *.sqlite
 

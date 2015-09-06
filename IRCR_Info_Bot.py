@@ -303,7 +303,7 @@ def setup():
         nologin = True
 
     if not nologin:
-        oauth = login(r, "oauth_main.ini")
+        oauth = login(r)
     else:
         print "Not logging in."
         testmode = True
