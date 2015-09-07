@@ -2,7 +2,7 @@
 
 [/u/IRCR_Info_Bot](http://www.reddit.com/user/IRCR_Info_Bot) on [/r/isrconspiracyracist](http://www.reddit.com/r/isrconspiracyracist).
 
-Scans for usernames in post titles and comments with information about them.
+Scans posts and summoning comments for usernames and replies with information about them.
 
 Originally written by [/u/GoldenSights](http://www.reddit.com/user/GoldenSights) ([original code](https://github.com/voussoir/reddit/blob/68b45302fb9fd8129a0ebc41f936ebbb08bad0f3/TitleNames/titlenames.py)), now maintained by the moderators of [/r/isrconspiracyracist](http://www.reddit.com/r/isrconspiracyracist).
 
@@ -13,7 +13,7 @@ Run with `python IRCR_Info_Bot.py [options]`.
 
 Settings are stored in [`config.py`](https://github.com/AnSq/IRCR_Info_Bot/blob/master/config.py). Descriptions of each setting can be found in the comments of that file.
 
-The environment variables `IRCR_USERNAME` and `IRCR_PASSWORD` are used to log in.
+The file `oauth.ini` is used to log in. See [the praw-OAuth2Util documentation](https://github.com/SmBe19/praw-OAuth2Util/blob/master/OAuth2Util/README.md#config) for more information.
 
 Use the `--test` (or `-t`) flag to turn on testing mode. The bot will not post comments in testing mode.
 
@@ -24,6 +24,8 @@ Use the `--multi` (or `-m`) flag to connect to `praw-multiprocess` if you're run
 To not even attempt logging in, use the `--nologin` (or `-n`) flag (implies `--test`).
 
 To use PostgreSQL instead of SQLite use the `--postgres` (or `-p`) flag. Requires that a `DATABASE_URL` environment variable be defined in the form `postgres://<username>:<password>@<host>:<port>/<database>`.
+
+The script also supports `--help` (or `-h`) to show a summary of options and `--version` (or `-v`) to show the version number.
 
 
 ## Summoning

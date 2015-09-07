@@ -642,8 +642,8 @@ def main():
         parser.add_argument("-m", "--multi",    action="store_true", help="Connect to and use praw-multiprocess for handling requests.")
         parser.add_argument("-n", "--nologin",  action="store_true", help="Don't attempt to log in. Implies --test.")
         parser.add_argument("-p", "--postgres", action="store_true", help="Use PostgreSQL instead of SQLite database.")
-        parser.add_argument("--ircr",           action="store_true", help=argparse.SUPPRESS)
-        parser.add_argument("--version",        action="version",    version="IRCR_Info_Bot v" + config.VERSION)
+        parser.add_argument("-i", "--ircr",     action="store_true", help=argparse.SUPPRESS)
+        parser.add_argument("-v", "--version",  action="version",    version="IRCR_Info_Bot v" + config.VERSION)
         cmdargs = parser.parse_args()
 
         bot = InfoBot(cmdargs)
