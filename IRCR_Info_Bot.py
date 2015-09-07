@@ -10,17 +10,12 @@ import os
 import urlparse
 import traceback
 import cPickle as pickle
+import argparse
 
 
 # load settings
 import config
 
-
-# undocumented feature: use --ircr flag to switch to scanning /r/ircr
-if "--ircr" in sys.argv:
-    config.SUBREDDIT = "ircr"
-    config.WAIT = 5
-    config.SQLITE_FILE = "ircr_testing.sqlite"
 
 
 class DatabaseAccess (object):
@@ -159,7 +154,7 @@ class DatabaseAccess (object):
 class InfoBot (object):
     """main class for bot functionality"""
 
-    def __init__(self):
+    def __init__(self, cmdargs):
         """initialize program"""
 
         #self.r
@@ -170,6 +165,17 @@ class InfoBot (object):
         #self.multi
         #self.nologin
         #self.oauth
+        #self.cmdargs
+
+        self.cmdargs = cmdargs
+
+
+        # undocumented feature: use --ircr flag to switch to scanning /r/ircr
+        if self.cmdargs.ircr:
+            config.SUBREDDIT = "ircr"
+            config.WAIT = 5
+            config.SQLITE_FILE = "ircr_testing.sqlite"
+
 
         # startup info
         print config.USERAGENT
@@ -182,12 +188,12 @@ class InfoBot (object):
         self.testmode = False
 
         self.pg = False
-        if "--postgres" in sys.argv or "-p" in sys.argv:
+        if self.cmdargs.postgres:
             self.pg = True
         self.db = DatabaseAccess(self.pg)
 
         self.multi = False
-        if "--multi" in sys.argv or "-m" in sys.argv:
+        if self.cmdargs.multi:
             self.multi = True
         self.r = self.reddit_connect(config.USERAGENT)
 
@@ -195,7 +201,7 @@ class InfoBot (object):
         # login
         self.oauth = None
         self.nologin = False
-        if "--nologin" in sys.argv or "-n" in sys.argv:
+        if self.cmdargs.nologin:
             self.nologin = True
 
         if not self.nologin:
@@ -207,7 +213,7 @@ class InfoBot (object):
 
         self.mod_list = self.load_mod_list(config.SPECIAL_MOD_SUBS)
 
-        if "--test" in sys.argv or "-t" in sys.argv:
+        if self.cmdargs.test:
             self.testmode = True
 
 
@@ -254,7 +260,7 @@ class InfoBot (object):
 
         print "Loading moderators of %d subreddits:" % len(subs)
 
-        if "--cache" in sys.argv or "-c" in sys.argv:
+        if self.cmdargs.cache:
             print "Loading mod list from cache."
             f = open(fname, "r")
             mod_list = pickle.load(f)
@@ -630,7 +636,17 @@ def print_exception(e):
 
 def main():
     try:
-        bot = InfoBot()
+        parser = argparse.ArgumentParser(description="Scan posts and summoning comments for usernames and reply with information about them.", epilog="See the full documentation at https://github.com/AnSq/IRCR_Info_Bot for more details.")
+        parser.add_argument("-t", "--test",     action="store_true", help="Test mode. Bot will not post comments.")
+        parser.add_argument("-c", "--cache",    action="store_true", help="Load moderator list from cache rather than download it.")
+        parser.add_argument("-m", "--multi",    action="store_true", help="Connect to and use praw-multiprocess for handling requests.")
+        parser.add_argument("-n", "--nologin",  action="store_true", help="Don't attempt to log in. Implies --test.")
+        parser.add_argument("-p", "--postgres", action="store_true", help="Use PostgreSQL instead of SQLite database.")
+        parser.add_argument("--ircr",           action="store_true", help=argparse.SUPPRESS)
+        parser.add_argument("--version",        action="version",    version="IRCR_Info_Bot v" + config.VERSION)
+        cmdargs = parser.parse_args()
+
+        bot = InfoBot(cmdargs)
         bot.mainloop()
     except KeyboardInterrupt:
         print "\nExit"
