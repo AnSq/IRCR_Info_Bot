@@ -19,7 +19,7 @@ SUBREDDIT = "isrconspiracyracist"
 # A list of alias lists. Each account in the sublist is the same person.
 # The first name of an alias list will be the "normal" name (used in SPECIALS, for example).
 ALIASES = [
-	["4to4", "4to3", "4to2", "4too", "4to6"],
+	["4to4", "4to3", "4to2", "4too", "4to6", "luckinator"],
 	["Jewish_NeoCon", "Jewish_NeoCon2"],
 	["Enochx", "Aerioch"],
 	["European88", "MayMayPoster", "Kill_All_Pakis", "gas-the-kikes"],
