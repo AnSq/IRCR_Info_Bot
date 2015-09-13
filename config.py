@@ -21,7 +21,7 @@ SUBREDDIT = "isrconspiracyracist"
 ALIASES = [
 	["4to4", "4to3", "4to2", "4too", "4to6", "luckinator"],
 	["Jewish_NeoCon", "Jewish_NeoCon2"],
-	["Enochx", "Aerioch"],
+	["Enochx", "Aerioch", "Thothx3"],
 	["European88", "MayMayPoster", "Kill_All_Pakis", "gas-the-kikes"],
 	["KlausDuJong", "AbsolomVonWret", "TheCanticleer", "HideoYamaguchi", "CaptainRalph", "ToquersCafe", "MelvinMole", "TheCantalabrian", "JohnnyJingleballs","JonApplethorn","CaptainRalph","TankTinker","ToquersCafe"], # Martin Timothy
 	["Antiochus88", "Indra-Varuna"],
