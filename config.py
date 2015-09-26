@@ -30,7 +30,8 @@ ALIASES = [
 	["eagleshigh", "EaglezhighH8H8"],
 	["Detroit_Safari", "NolanChancellor", "Nolan_Chancellor"],
 	["AlphamaxHD", "MossadOwnsPOTUS", "AnonBTCShoppin", "YHWHisSatan", "LOLHOLOHOAX"],
-	["RedditRevisionist", "user1060", "user1065", "user1067", "HDNWdotcom", "NankingThrowaway", "AHdidnothingwrong", "holocaustisholohoax", "Boredquestioner", "JUSTASKINGQUESTlONS", "davesimmonds3"]
+	["RedditRevisionist", "user1060", "user1065", "user1067", "HDNWdotcom", "NankingThrowaway", "AHdidnothingwrong", "holocaustisholohoax", "Boredquestioner", "JUSTASKINGQUESTlONS", "davesimmonds3"],
+	["davidtoni", "xanaxinator"]
 ]
 
 
