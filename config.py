@@ -103,6 +103,9 @@ SPECIALS = {
 
 "RedditRevisionist"
     : " | [neo-Nazi](http://redd.it//2ykqgx/) with [lots of alts](http://redd.it/2zntjv)",
+
+"AssuredlyAThrowAway"
+    : "former mod of /r/conspiracy",
 }
 
 
