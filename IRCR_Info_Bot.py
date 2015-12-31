@@ -465,7 +465,7 @@ class InfoBot (object):
             try:
                 user = self.r.get_redditor(username, fetch=True)
                 rel_d = dateutil.relativedelta.relativedelta(datetime.datetime.utcnow(), datetime.datetime.utcfromtimestamp(user.created_utc))
-                age = "%dy %dm %dd" % (rel_d.years, rel_d.months, rel_d.days)
+                age = "%dy %dm %dd" % (rel_d.years, rel_d.months, rel_d.days) if rel_d.years > 0 else ("%dm %dd" % (rel_d.months, rel_d.days) if rel_d.months > 0 else "%dd" % rel_d.days)
                 comment_karma = str(user.comment_karma) if user.comment_karma < 1000 else "%.1fk" % (float(user.comment_karma)/1000)
                 link_karma    = str(user.link_karma)    if user.link_karma    < 1000 else "%.1fk" % (float(user.link_karma)   /1000)
                 karma = "%s/%s" % (link_karma, comment_karma)
