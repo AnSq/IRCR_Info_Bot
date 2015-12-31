@@ -225,6 +225,10 @@ class InfoBot (object):
             print "Running in live mode. Bot will post comments."
 
 
+    def format(self, s, **kwargs):
+        return string.Formatter().vformat(s, (), SafeDict(kwargs))
+
+
     def reddit_connect(self, useragent):
         """connect to reddit"""
         # connect to reddit
@@ -484,22 +488,22 @@ class InfoBot (object):
                     print "|\t\t%d previous alias mentions" % prevcount
                     searchquery = self.make_searchquery(alias_list)
 
-                info += config.NORMALSTRING.replace('$username$', username).replace("$searchquery$", searchquery).replace("$age$", age).replace("$karma$", karma)
+                info += self.format(config.NORMALSTRING, username=username, age=age, karma=karma, searchquery=searchquery)
                 break
             except praw.errors.NotFound as e:
                 # A 404 error means the user was deleted or banned
-                info += config.DEADUSER.replace('$username$', username)
+                info += self.format(config.DEADUSER, username=username)
                 print '|\t\tDead'
                 break
             except Exception as e:
                 # Any other error (notably a 504) means we should try again to get the user
-                print "Error getting user: %s: %s" % (type(e).__name__, str(e))
+                print "Error handling user: %s: %s" % (type(e).__name__, str(e))
                 time.sleep(2)
                 continue
 
         if self.db and len(alias_list) == 0:
             prevcount = self.db.get_mentions(username)
-        info = info.replace("$prevcount$", str(prevcount))
+        info = self.format(info, prevcount=prevcount)
         if len(alias_list) == 0: print "|\t\t%d previous mentions" % prevcount
 
         return info
@@ -511,10 +515,10 @@ class InfoBot (object):
         normal = self.normalize_name(username.lower())
         if normal in config.SPECIALS:
             print '|\t\tSpecial'
-            info += config.SPECIALS[normal].replace('$username$', normal)
+            info += self.format(config.SPECIALS[normal], username=normal)
         if username.lower() != normal.lower() and username in config.SPECIALS:
             print '|\t\tAlias special'
-            info += config.SPECIALS[username].replace('$username$', username)
+            info += self.format(config.SPECIALS[username], username=username)
         return info
 
 
@@ -525,7 +529,7 @@ class InfoBot (object):
             name = username.lower()
             subs = self.mod_list[name]
             print "|\t\tMod " + str(subs)
-            info += config.MOD_REMARK.replace("$sublist$", self.make_sublist(subs))
+            info += self.format(config.MOD_REMARK, sublist=self.make_sublist(subs))
         return info
 
 
@@ -533,7 +537,7 @@ class InfoBot (object):
         """construct a search query for all the given names"""
         q = ""
         for name in names:
-            q += "%2Fu%2F$username$+OR+".replace("$username$", name)
+            q += "%2Fu%2F{username}+OR+".format(username=name)
         return q[:-4] # chop off final "+OR+"
 
 
@@ -633,6 +637,12 @@ class InfoBot (object):
             self.db.commit()
             time.sleep(config.WAIT)
 
+
+# for config handling
+# see https://stackoverflow.com/questions/17215400/python-format-string-unused-named-arguments
+class SafeDict(dict):
+    def __missing__(self, key):
+        return '{' + key + '}'
 
 
 def print_exception(e):

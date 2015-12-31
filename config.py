@@ -35,14 +35,38 @@ ALIASES = [
 ]
 
 
-# remark that every user gets. $username$ will be replaced by the username automatically
+# remark that every user gets. {username} will be replaced by the username automatically
+# These variables will be automatically replaced with their corresponding values
+#     {username}    : username
+#     {age}         : account age, for example, "2y 8m 20d" for 2 years, 8 months, and 20 days
+#     {karma}       : account karma, for example, 277/12.4k for 277 link karma and 12400 comment karma
+#     {prevcount}   : number of previous mentions of this user (or their aliases) in the database
+#     {searchquery} : a query for reddit's search engine to get a list of previous mentions, including aliases
+NORMALSTRING = ": Age: {age} | Karma: {karma} | [{prevcount} previous posts](http://www.reddit.com/r/isrconspiracyracist/search?q={searchquery}&restrict_sr=on&sort=relevance&t=all) | [Redective](http://www.redective.com/?r=e&a=search&s=user&t=redective&q={username}) | [RedditGraphs](http://www.roadtolarissa.com/redditgraphs/?{username}&PieChart&Number&Comments) | [SnoopSnoo](http://snoopsnoo.com/u/{username})"
+
+
+# extra remark that mods of subs in SPECIAL_MOD_SUBS get.
+# Variables:
+#     {sublist} : a list of modded subs (e.g., "/r/pics, /r/funny, and /r/conspiracy")
+MOD_REMARK = " | Moderator of {sublist}"
+
+
+# remark for accounts which are invalid or shadowbanned. $username$ will be replaced by the username automatically
 # $prevcount$ is replaced by the number of previous posts mentioning the user
-#NORMALSTRING = ": [Submissions](http://reddit.com/u/$username$/submitted) | [Comments](http://reddit.com/u/$username$/comments)"
-NORMALSTRING = ": Age: $age$ | Karma: $karma$ | [$prevcount$ previous posts](http://www.reddit.com/r/isrconspiracyracist/search?q=$searchquery$&restrict_sr=on&sort=relevance&t=all) | [Redective](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=$username$) | [RedditGraphs](http://www.roadtolarissa.com/redditgraphs/?$username$&PieChart&Number&Comments) | [SnoopSnoo](http://snoopsnoo.com/u/$username$)"
+# Variables (see NORMALSTRING):
+#     {username}
+#     {prevcount}
+DEADUSER = ": [{prevcount} previous posts](http://www.reddit.com/r/isrconspiracyracist/search?q=%2Fu%2F{username}&restrict_sr=on&sort=relevance&t=all) | Account shadowbanned/deleted"
 
 
-# Map of special users to their extra remark. $username$ will be replaced by the username automatically.
+# list of subreddits to add special remarks to mods of
+SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi", "GoEbola", 'Apefrica', 'Ausfailia', 'Ben_Garrison', 'BritishNationalParty', 'Detoilet', 'Londonistan', 'N1GGERS', 'NegroFree', 'NiggerCartoons', 'NiggerMythology', 'NiggersGIFs', 'NiggersNews', 'NiggersTIL', 'RacistNiggers', 'TNB', 'TheGoyimKnow', 'TheProjects', 'TrayvonMartin', 'UKistan', 'WTFniggers', 'WhiteIdentity', 'WhiteRights1', 'chimpmusic', 'farright', 'ferguson', 'funnyniggers', 'niggerspics', 'polacks', 'polfacts', 'whitebeauty']
+
+
+# Map of special users to their extra remark.
 # Automatically works for any alias when the key is the "normal" name (first name in alias list)
+# Variables:
+#     {username}
 SPECIALS = {
 "Antiochus88"
     : " | [Top Racist Posters entry](http://www.reddit.com/r/isrconspiracyracist/wiki/topracistposters#wiki_.2Fu.2Fantiochus88)",
@@ -105,22 +129,8 @@ SPECIALS = {
     : " | [neo-Nazi](http://redd.it//2ykqgx/) with [lots of alts](http://redd.it/2zntjv)",
 
 "AssuredlyAThrowAway"
-    : "former mod of /r/conspiracy",
+    : "| former mod of /r/conspiracy",
 }
-
-
-# list of subreddits to add special remarks to mods of
-SPECIAL_MOD_SUBS = ["conspiracy", "ZOG", "WhiteRights", "holocaust", "GreatApes", "BlackCrime", "WhiteNationalism", "AdolfHitler", "NationalSocialism", "GoldenDawn", "White_Pride", "Race_Realism", "AmericanJewishPower", "BritishJewishPower", "NorthwestFront", "Reichspost", "FourthReich", "Chimpout", "ChrysiAvgi", "GoEbola", 'Apefrica', 'Ausfailia', 'Ben_Garrison', 'BritishNationalParty', 'Detoilet', 'Londonistan', 'N1GGERS', 'NegroFree', 'NiggerCartoons', 'NiggerMythology', 'NiggersGIFs', 'NiggersNews', 'NiggersTIL', 'RacistNiggers', 'TNB', 'TheGoyimKnow', 'TheProjects', 'TrayvonMartin', 'UKistan', 'WTFniggers', 'WhiteIdentity', 'WhiteRights1', 'chimpmusic', 'farright', 'ferguson', 'funnyniggers', 'niggerspics', 'polacks', 'polfacts', 'whitebeauty']
-
-
-# extra remark that mods of subs in SPECIAL_MOD_SUBS get.
-# $sublist$ replaced with list of modded subs (e.g., "/r/pics, /r/funny, and /r/conspiracy")
-MOD_REMARK = " | Moderator of $sublist$"
-
-
-# remark for accounts which are invalid or shadowbanned. $username$ will be replaced by the username automatically
-# $prevcount$ is replaced by the number of previous posts mentioning the user
-DEADUSER = ": [$prevcount$ previous posts](http://www.reddit.com/r/isrconspiracyracist/search?q=%2Fu%2F$username$&restrict_sr=on&sort=relevance&t=all) | Account shadowbanned/deleted"
 
 
 # This will be at the very top of the comment. \n\n creates a new line. Set this to "" if you don't want anything.
