@@ -471,7 +471,7 @@ class InfoBot (object):
                 karma = "%s/%s" % (link_karma, comment_karma)
 
                 info = info.replace(username, user.name) # standardize capitalization
-                info = "[{0}](http://reddit.com{0})".format(info)
+                info = "[%s](http://reddit.com%s)" % (info.replace("_", "\_"), info) # block username mention and fix underscore italics
 
                 searchquery = "%2Fu%2F" + username
                 alias_list = self.get_alias_list(username.lower())
