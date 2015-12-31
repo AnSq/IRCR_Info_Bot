@@ -11,6 +11,8 @@ import urlparse
 import traceback
 import cPickle as pickle
 import argparse
+import dateutil.relativedelta
+import datetime
 
 
 # load settings
@@ -462,6 +464,12 @@ class InfoBot (object):
         while True:
             try:
                 user = self.r.get_redditor(username, fetch=True)
+                rel_d = dateutil.relativedelta.relativedelta(datetime.datetime.utcnow(), datetime.datetime.utcfromtimestamp(user.created_utc))
+                age = "%dy %dm %dd" % (rel_d.years, rel_d.months, rel_d.days)
+                comment_karma = str(user.comment_karma) if user.comment_karma < 1000 else "%.1fk" % (float(user.comment_karma)/1000)
+                link_karma    = str(user.link_karma)    if user.link_karma    < 1000 else "%.1fk" % (float(user.link_karma)   /1000)
+                karma = "%s/%s" % (link_karma, comment_karma)
+
                 info = info.replace(username, user.name) # standardize capitalization
                 info = "[{0}](http://reddit.com{0})".format(info)
 
@@ -476,7 +484,7 @@ class InfoBot (object):
                     print "|\t\t%d previous alias mentions" % prevcount
                     searchquery = self.make_searchquery(alias_list)
 
-                info += config.NORMALSTRING.replace('$username$', username).replace("$searchquery$", searchquery)
+                info += config.NORMALSTRING.replace('$username$', username).replace("$searchquery$", searchquery).replace("$age$", age).replace("$karma$", karma)
                 break
             except praw.errors.NotFound as e:
                 # A 404 error means the user was deleted or banned

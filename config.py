@@ -38,7 +38,7 @@ ALIASES = [
 # remark that every user gets. $username$ will be replaced by the username automatically
 # $prevcount$ is replaced by the number of previous posts mentioning the user
 #NORMALSTRING = ": [Submissions](http://reddit.com/u/$username$/submitted) | [Comments](http://reddit.com/u/$username$/comments)"
-NORMALSTRING = ": [$prevcount$ previous posts](http://www.reddit.com/r/isrconspiracyracist/search?q=$searchquery$&restrict_sr=on&sort=relevance&t=all) | [Redective](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=$username$) | [RedditGraphs](http://www.roadtolarissa.com/redditgraphs/?$username$&PieChart&Number&Comments) | [SnoopSnoo](http://snoopsnoo.com/u/$username$)"
+NORMALSTRING = ": Age: $age$ | Karma: $karma$ | [$prevcount$ previous posts](http://www.reddit.com/r/isrconspiracyracist/search?q=$searchquery$&restrict_sr=on&sort=relevance&t=all) | [Redective](http://www.redective.com/?r=e&a=search&s=user&t=redective&q=$username$) | [RedditGraphs](http://www.roadtolarissa.com/redditgraphs/?$username$&PieChart&Number&Comments) | [SnoopSnoo](http://snoopsnoo.com/u/$username$)"
 
 
 # Map of special users to their extra remark. $username$ will be replaced by the username automatically.
