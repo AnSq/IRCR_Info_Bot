@@ -1,0 +1,24 @@
+%YAML 1.1
+---
+# The bot's User-agent.
+# Variable:
+#     {version}: bot's version number
+USERAGENT: "IRCR Info Scanner v{version}, controlled by the moderators of /r/isrconspiracyracist"
+
+# Subreddit to scan and comment in
+SUBREDDIT: isrconspiracyracist
+
+# Wiki page of SUBREDDIT (i.e., https://www.reddit.com/r/{SUBREDDIT}/wiki/{WIKI_CONFIG_PAGE})
+# that contains the configuration information in its first (and only) <code> block.
+WIKI_CONFIG_PAGE: ircr_info_bot_config
+
+# If using a SQLITE database (the default), the file to store it in
+SQLITE_FILE: database.sqlite
+
+# User to log in and post comments as
+MAIN_USER: IRCR_Info_Bot
+
+# Map of user names to OAuth credential files (in PRAW-OAuth2Util format)
+USERS:
+    IRCR_Info_Bot: IRCR_Info_Bot.oauth.ini
+...

@@ -5,12 +5,16 @@ insert.py
 auth.py
 oauth.txt
 oauth.ini
+*.oauth.ini
 
 # persistent storage
 *.pickle
 *.sqlite
 
 env_old/
+
+wiki.yaml
+config.py
 
 
 # Byte-compiled / optimized / DLL files

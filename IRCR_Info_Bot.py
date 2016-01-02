@@ -13,19 +13,87 @@ import cPickle as pickle
 import argparse
 import dateutil.relativedelta
 import datetime
+import yaml
+import pyquery
 
 
-# load settings
-import config
+VERSION = "1.9"
+LOCAL_CONFIG_FILE = "config.yaml"
+
+UNAME_PREFIX = "/u/"
+
+
+class Config (object):
+    """handles configuration stuff, including loading from a wiki page"""
+
+    def __init__(self, config_file):
+        """load the local config file, which contains some basic stuff including the location of the wiki config page"""
+
+        self.config_file = config_file
+
+        self.VERSION = VERSION
+
+        with open(config_file) as f:
+            d = yaml.load(f.read())
+
+        self.USERAGENT         = d["USERAGENT"].format(version=self.VERSION)
+        self.SUBREDDIT         = d["SUBREDDIT"]
+        self.SQLITE_FILE       = d["SQLITE_FILE"]
+        self._WIKI_CONFIG_PAGE = d["WIKI_CONFIG_PAGE"]
+        self.MAIN_USER         = d["MAIN_USER"].lower()
+
+        self.USERS = d["USERS"]
+        self.USERS = {k.lower():v for k,v in self.USERS.items()} # lowercase all usernames for easy lookup
+
+
+    def load(self, r):
+        """load the config from the wiki"""
+        print "Loading config from https://www.reddit.com/r/%s/wiki/%s" % (self.SUBREDDIT, self._WIKI_CONFIG_PAGE)
+
+        try:
+            wiki_page = r.get_wiki_page(self.SUBREDDIT, self._WIKI_CONFIG_PAGE)
+            doc = pyquery.PyQuery(wiki_page.content_html)
+        except praw.errors.Forbidden as e:
+            print "Forbidden: could not get wiki page. Are you not logged in (--nologin / -n)? Do you have the wikiread OAuth scope?"
+            sys.exit(3)
+
+        q = doc("code")
+
+        if len(q) != 1:
+            print "Found %d <code> tags. Must be 1. Check the wiki page formatting."
+            print "Exiting."
+            sys.exit(4)
+
+        d = yaml.load(q[0].text)
+
+        self.NORMALSTRING       = d["NORMALSTRING"]
+        self.MOD_REMARK         = d["MOD_REMARK"]
+        self.DEADUSER           = d["DEADUSER"]
+        self.ALIASES            = d["ALIASES"]
+        self.HEADER             = d["HEADER"]
+        self.COLLAPSIBLE_HEADER = d["COLLAPSIBLE_HEADER"]
+        self.COLLAPSIBLE_FOOTER = d["COLLAPSIBLE_FOOTER"]
+        self.FOOTER             = d["FOOTER"]
+        self.SPECIALS           = d["SPECIALS"]
+        self.SPECIAL_MOD_SUBS   = d["SPECIAL_MOD_SUBS"]
+        self.DISTINGUISHCOMMENT = d["DISTINGUISHCOMMENT"]
+        self.WAIT               = d["WAIT"]
+        self.MAXPOSTS           = d["MAXPOSTS"]
+
+        # lowercase all usernams for easy lookup
+        self.SPECIALS = {k.lower():v for k,v in self.SPECIALS.items()}
+        self.ALIASES = [[name.lower() for name in person] for person in self.ALIASES]
 
 
 
 class DatabaseAccess (object):
     """contains all methods for accessing the database"""
 
-    def __init__(self, pg):
+    def __init__(self, pg, config):
         """load and connect to the database"""
         self.pg = pg
+        self.config = config
+
         self.load_db_lib()
         self.db_connect()
         self.load_db()
@@ -39,7 +107,7 @@ class DatabaseAccess (object):
                 self.psycopg2 = psycopg2
             except:
                 print "Failed to load psycopg2 (Postgres library). Exiting."
-                sys.exit()
+                sys.exit(1)
         else:
             import sqlite3
             self.sqlite3 = sqlite3
@@ -66,7 +134,8 @@ class DatabaseAccess (object):
                 port=url.port
             )
         else:
-            self.conn = self.sqlite3.connect(config.SQLITE_FILE)
+            print "Connecting to SQLite database %s..." % self.config.SQLITE_FILE
+            self.conn = self.sqlite3.connect(self.config.SQLITE_FILE)
 
         print "Connected to database"
         return self.conn
@@ -156,7 +225,7 @@ class DatabaseAccess (object):
 class InfoBot (object):
     """main class for bot functionality"""
 
-    def __init__(self, cmdargs):
+    def __init__(self, cmdargs, config):
         """initialize program"""
 
         #self.r
@@ -171,33 +240,19 @@ class InfoBot (object):
 
         self.cmdargs = cmdargs
 
-
-        # undocumented feature: use --ircr flag to switch to scanning /r/ircr
-        if self.cmdargs.ircr:
-            config.SUBREDDIT = "ircr"
-            config.WAIT = 5
-            config.SQLITE_FILE = "ircr_testing.sqlite"
+        self.config = config
 
 
         # startup info
-        print config.USERAGENT
-
-        # lowercase all usernams for easy lookup
-        config.SPECIALS = {k.lower():v for k,v in config.SPECIALS.items()}
-        config.ALIASES = [[name.lower() for name in person] for person in config.ALIASES]
+        print self.config.USERAGENT
 
         # bot does not comment in testing mode
         self.testmode = False
 
-        self.pg = False
-        if self.cmdargs.postgres:
-            self.pg = True
-        self.db = DatabaseAccess(self.pg)
-
         self.multi = False
         if self.cmdargs.multi:
             self.multi = True
-        self.r = self.reddit_connect(config.USERAGENT)
+        self.r = self.reddit_connect(self.config.USERAGENT)
 
 
         # login
@@ -207,25 +262,47 @@ class InfoBot (object):
             self.nologin = True
 
         if not self.nologin:
-            self.bot_username, self.oauth = self.login()
+            print "Logging in as /u/%s..." % self.config.MAIN_USER
+            self.bot_username, self.oauth = self.login(self.config.USERS[self.config.MAIN_USER])
+            if self.bot_username.lower() != self.config.MAIN_USER:
+                print "Logged in as wrong user. Check your config file (%s) and OAuth file(s)" % LOCAL_CONFIG_FILE
+                sys.exit(5)
         else:
             print "Not logging in."
             self.testmode = True
 
 
-        self.mod_list = self.load_mod_list(config.SPECIAL_MOD_SUBS)
+        self.config.load(self.r)
+
+
+        # undocumented feature: use --ircr flag to switch to scanning /r/ircr
+        if self.cmdargs.ircr:
+            self.config.SUBREDDIT = "ircr"
+            self.config.WAIT = 5
+            self.config.SQLITE_FILE = "ircr_testing.sqlite"
+
+
+        self.pg = False
+        if self.cmdargs.postgres:
+            self.pg = True
+        self.db = DatabaseAccess(self.pg, self.config)
+
+
+        self.mod_list = self.load_mod_list(self.config.SPECIAL_MOD_SUBS)
+
 
         if self.cmdargs.test:
             self.testmode = True
 
 
         if self.testmode:
-            print "Running in testing mode. Bot will not post comments."
+            print "Running in TESTING mode. Bot will NOT post comments."
         else:
-            print "Running in live mode. Bot will post comments."
+            print "Running in LIVE mode. Bot WILL post comments."
 
 
     def format(self, s, **kwargs):
+        """for config variable handling. See https://stackoverflow.com/questions/17215400/python-format-string-unused-named-arguments"""
         return string.Formatter().vformat(s, (), SafeDict(kwargs))
 
 
@@ -242,9 +319,8 @@ class InfoBot (object):
         return r
 
 
-    def login(self, configfile="oauth.ini"):
+    def login(self, configfile):
         """log in to reddit"""
-
         try:
             oauth = OAuth2Util.OAuth2Util(self.r, configfile=configfile)
             oauth.refresh(force=True)
@@ -255,7 +331,7 @@ class InfoBot (object):
             print "Failed to log in:"
             print_exception(e)
             print "Exiting"
-            sys.exit()
+            sys.exit(2)
 
 
     def load_mod_list(self, subs):
@@ -322,8 +398,8 @@ class InfoBot (object):
     def scan_subreddit(self):
         """scan post titles and post comments"""
 
-        subreddit = self.r.get_subreddit(config.SUBREDDIT)
-        posts = subreddit.get_new(limit=config.MAXPOSTS)
+        subreddit = self.r.get_subreddit(self.config.SUBREDDIT)
+        posts = subreddit.get_new(limit=self.config.MAXPOSTS)
         for post in posts:
             text = "%s %s" % (post.title, post.selftext)
             try:
@@ -357,11 +433,12 @@ class InfoBot (object):
 
 
     def scan_comments(self):
+        """scan for summons in comments"""
         try:
-            generator = self.r.get_subreddit(config.SUBREDDIT).get_comments(limit=100)
+            generator = self.r.get_subreddit(self.config.SUBREDDIT).get_comments(limit=100)
             for comment in generator:
                 self.handle_comment(comment)
-            time.sleep(config.WAIT)
+            time.sleep(self.config.WAIT)
         except Exception as e:
             print_exception(e)
 
@@ -389,7 +466,7 @@ class InfoBot (object):
                     found_string = u"\n! Found comment (%s) by /u/%s" % (link, author)
                     print found_string.encode("ascii", "backslashreplace")
 
-                    reply, names = self.text_to_comment(text, [config.TRIGGERSTRING, "u/"])
+                    reply, names = self.text_to_comment(text, [UNAME_PREFIX, "u/"])
 
                     # Don't increment counts from summons (http://www.reddit.com/comments/2amark/-/cixzt9k?context=3)
 
@@ -404,7 +481,7 @@ class InfoBot (object):
                 self.db.commit()
 
 
-    def text_to_comment(self, text, triggers=[config.TRIGGERSTRING]):
+    def text_to_comment(self, text, triggers=[UNAME_PREFIX]):
         """generate a comment from a post"""
         # default reddit instance provided for convenience in terminal. Don't use it in scripts.
 
@@ -424,7 +501,7 @@ class InfoBot (object):
         return (comment, names)
 
 
-    def scan_post(self, text, trigger=config.TRIGGERSTRING):
+    def scan_post(self, text, trigger=UNAME_PREFIX):
         """extract a set of usernames from a string"""
         users = set()
         CHARS = string.digits + string.ascii_letters + '-_'
@@ -459,7 +536,7 @@ class InfoBot (object):
     def make_normal_info(self, username):
         """generate normal remark for all users, or dead remark"""
 
-        info = config.TRIGGERSTRING + username
+        info = UNAME_PREFIX + username
         print "|\t" + info
 
         prevcount = 0
@@ -488,11 +565,11 @@ class InfoBot (object):
                     print "|\t\t%d previous alias mentions" % prevcount
                     searchquery = self.make_searchquery(alias_list)
 
-                info += self.format(config.NORMALSTRING, username=username, age=age, karma=karma, searchquery=searchquery)
+                info += self.format(self.config.NORMALSTRING, username=username, age=age, karma=karma, searchquery=searchquery)
                 break
             except praw.errors.NotFound as e:
                 # A 404 error means the user was deleted or banned
-                info += self.format(config.DEADUSER, username=username)
+                info += self.format(self.config.DEADUSER, username=username)
                 print '|\t\tDead'
                 break
             except Exception as e:
@@ -513,12 +590,12 @@ class InfoBot (object):
         """generate special remark for user, if any"""
         info = ""
         normal = self.normalize_name(username.lower())
-        if normal in config.SPECIALS:
+        if normal in self.config.SPECIALS:
             print '|\t\tSpecial'
-            info += self.format(config.SPECIALS[normal], username=normal)
-        if username.lower() != normal.lower() and username in config.SPECIALS:
+            info += self.format(self.config.SPECIALS[normal], username=normal)
+        if username.lower() != normal.lower() and username in self.config.SPECIALS:
             print '|\t\tAlias special'
-            info += self.format(config.SPECIALS[username], username=username)
+            info += self.format(self.config.SPECIALS[username], username=username)
         return info
 
 
@@ -529,7 +606,7 @@ class InfoBot (object):
             name = username.lower()
             subs = self.mod_list[name]
             print "|\t\tMod " + str(subs)
-            info += self.format(config.MOD_REMARK, sublist=self.make_sublist(subs))
+            info += self.format(self.config.MOD_REMARK, sublist=self.make_sublist(subs))
         return info
 
 
@@ -553,7 +630,7 @@ class InfoBot (object):
     def get_alias_list(self, name):
         """return a list of names the given name also goes by"""
         # haha, yes! See https://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
-        return [n for p in filter(lambda person: name in person, config.ALIASES) for n in p]
+        return [n for p in filter(lambda person: name in person, self.config.ALIASES) for n in p]
 
 
     def make_sublist(self, subs):
@@ -575,12 +652,12 @@ class InfoBot (object):
 
     def make_comment(self, remarks):
         """generate a complete comment from a collection of remarks"""
-        header = config.HEADER
-        footer = config.FOOTER
+        header = self.config.HEADER
+        footer = self.config.FOOTER
 
         if len(remarks) > 1:
-            header = header + config.COLLAPSIBLE_HEADER
-            footer = config.COLLAPSIBLE_FOOTER + footer
+            header = header + self.config.COLLAPSIBLE_HEADER
+            footer = self.config.COLLAPSIBLE_FOOTER + footer
 
         return header + "\n\n- " + "\n\n- ".join(remarks) + footer
 
@@ -593,7 +670,7 @@ class InfoBot (object):
                 newcomment = post.add_comment(comment)
                 self.db.commit()
                 print "| Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
-                if config.DISTINGUISHCOMMENT:
+                if self.config.DISTINGUISHCOMMENT:
                     newcomment.distinguish()
                     print "| Comment distinguished."
             except:
@@ -614,7 +691,7 @@ class InfoBot (object):
                 newcomment = parent.reply(comment)
                 self.db.commit()
                 print "! Comment posted. (http://reddit.com/comments/%s/-/%s)" % (newcomment.link_id[3:], newcomment.id)
-                if config.DISTINGUISHCOMMENT:
+                if self.config.DISTINGUISHCOMMENT:
                     newcomment.distinguish()
                     print "! Comment distinguished."
             except:
@@ -635,25 +712,28 @@ class InfoBot (object):
             except Exception as e:
                 print_exception(e)
             self.db.commit()
-            time.sleep(config.WAIT)
+            time.sleep(self.config.WAIT)
 
 
-# for config handling
-# see https://stackoverflow.com/questions/17215400/python-format-string-unused-named-arguments
+
 class SafeDict(dict):
+    """for config variable handling. Taken from https://stackoverflow.com/questions/17215400/python-format-string-unused-named-arguments"""
     def __missing__(self, key):
         return '{' + key + '}'
 
 
 def print_exception(e):
+    """Print exception information (including traceback) in a nice(?) format"""
     print "\n--------------------------------"
-    print "*** ERROR: %s.%s: %s" % (e.__module__, type(e).__name__, str(e))
+    print "*** ERROR: %s%s: %s" % (e.__module__+"." if "__module__" in dir(e) else "", type(e).__name__, str(e))
     traceback.print_exc()
     print "--------------------------------\n"
 
 
 def main():
     try:
+        config = Config(LOCAL_CONFIG_FILE)
+
         parser = argparse.ArgumentParser(description="Scan posts and summoning comments for usernames and reply with information about them.", epilog="See the full documentation at https://github.com/AnSq/IRCR_Info_Bot for more details.")
         parser.add_argument("-t", "--test",     action="store_true", help="Test mode. Bot will not post comments.")
         parser.add_argument("-c", "--cache",    action="store_true", help="Load moderator list from cache rather than download it.")
@@ -664,7 +744,7 @@ def main():
         parser.add_argument("-v", "--version",  action="version",    version="IRCR_Info_Bot v" + config.VERSION)
         cmdargs = parser.parse_args()
 
-        bot = InfoBot(cmdargs)
+        bot = InfoBot(cmdargs, config)
         bot.mainloop()
     except KeyboardInterrupt:
         print "\nExit"
