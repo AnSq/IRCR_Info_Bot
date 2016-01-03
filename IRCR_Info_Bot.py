@@ -55,14 +55,14 @@ class Config (object):
             doc = pyquery.PyQuery(wiki_page.content_html)
         except praw.errors.Forbidden as e:
             print "Forbidden: could not get wiki page. Are you not logged in (--nologin / -n)? Do you have the wikiread OAuth scope?"
-            sys.exit(3)
+            sys.exit(EXIT_WIKI_FORBIDDEN)
 
         q = doc("code")
 
         if len(q) != 1:
             print "Found %d <code> tags. Must be 1. Check the wiki page formatting."
             print "Exiting."
-            sys.exit(4)
+            sys.exit(EXIT_WIKI_FORMAT)
 
         d = yaml.load(q[0].text)
 
@@ -107,7 +107,7 @@ class DatabaseAccess (object):
                 self.psycopg2 = psycopg2
             except:
                 print "Failed to load psycopg2 (Postgres library). Exiting."
-                sys.exit(1)
+                sys.exit(EXIT_LOAD_PSYCOPG2)
         else:
             import sqlite3
             self.sqlite3 = sqlite3
@@ -266,7 +266,7 @@ class InfoBot (object):
             self.bot_username, self.oauth = self.login(self.config.USERS[self.config.MAIN_USER])
             if self.bot_username.lower() != self.config.MAIN_USER:
                 print "Logged in as wrong user. Check your config file (%s) and OAuth file(s)" % LOCAL_CONFIG_FILE
-                sys.exit(5)
+                sys.exit(EXIT_WRONG_USER)
         else:
             print "Not logging in."
             self.testmode = True
@@ -331,7 +331,7 @@ class InfoBot (object):
             print "Failed to log in:"
             print_exception(e)
             print "Exiting"
-            sys.exit(2)
+            sys.exit(EXIT_LOGIN_FAILED)
 
 
     def load_mod_list(self, subs):
@@ -748,6 +748,13 @@ def main():
         bot.mainloop()
     except KeyboardInterrupt:
         print "\nExit"
+
+
+EXIT_LOAD_PSYCOPG2  = 1
+EXIT_LOGIN_FAILED   = 2
+EXIT_WIKI_FORBIDDEN = 3
+EXIT_WIKI_FORMAT    = 4
+EXIT_WRONG_USER     = 5
 
 
 if __name__ == "__main__":
