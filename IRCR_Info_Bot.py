@@ -574,7 +574,15 @@ class InfoBot (object):
                 break
             except Exception as e:
                 # Any other error (notably a 504) means we should try again to get the user
-                print "Error handling user: %s: %s" % (type(e).__name__, str(e))
+                print_exception(e)
+
+                # FIXME: the following is a stupid hack for suspended users.
+                if "is_suspended" in dir(user) and user.is_suspended:
+                    info += self.format(self.config.DEADUSER, username=username)
+                    print '|\t\tDead (suspended)'
+                    break
+                # end stupid hack for suspended users
+
                 time.sleep(2)
                 continue
 
