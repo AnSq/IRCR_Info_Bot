@@ -15,9 +15,10 @@ import dateutil.relativedelta
 import datetime
 import yaml
 import pyquery
+import subprocess
 
 
-VERSION = "1.9"
+VERSION = "1.9.1"
 LOCAL_CONFIG_FILE = "config.yaml"
 
 UNAME_PREFIX = "/u/"
@@ -31,7 +32,7 @@ class Config (object):
 
         self.config_file = config_file
 
-        self.VERSION = VERSION
+        self.VERSION = self.get_version()
 
         with open(config_file) as f:
             d = yaml.load(f.read())
@@ -44,6 +45,41 @@ class Config (object):
 
         self.USERS = d["USERS"]
         self.USERS = {k.lower():v for k,v in self.USERS.items()} # lowercase all usernames for easy lookup
+
+
+    def get_version(self):
+        git_version = self.get_git_version()
+        if git_version:
+            return "%s+git-%s" % (VERSION, git_version)
+        else:
+            return VERSION
+
+
+    def get_git_version(self):
+        if os.path.exists(".git"):
+            try:
+                git_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().lower()
+            except Exception as e:
+                print_exception(e)
+                return ""
+
+            if len(git_hash) > 0 and all([i in string.hexdigits for i in git_hash]):
+                try:
+                    git_status = subprocess.check_output(["git", "status", "--porcelain"]).strip()
+                except Exception as e:
+                    print_exception(e)
+                    return git_hash
+
+                if git_status:
+                    return git_hash + ".modified"
+                else:
+                    return git_hash
+            else:
+                print "`git rev-parse --short HEAD` returned an invalid hash"
+                return ""
+
+        else:
+            return ""
 
 
     def load(self, r):
@@ -237,6 +273,7 @@ class InfoBot (object):
         #self.nologin
         #self.oauth
         #self.cmdargs
+        #self.config
 
         self.cmdargs = cmdargs
 
@@ -335,10 +372,9 @@ class InfoBot (object):
 
 
     def load_mod_list(self, subs):
-        """returns a map of name to list of subreddits of moderators of the given subs.
-        default reddit instance provided for convenience in terminal. Don't use it in scripts."""
+        """returns a map of name to list of subreddits of moderators of the given subs."""
 
-        fname = "mod_list_cache.pickle"
+        fname = "mod_list_cache.pickle" #MAGIC
 
         print "Loading moderators of %d subreddits:" % len(subs)
 
@@ -447,7 +483,7 @@ class InfoBot (object):
         """do stuff with a comment.
         Part of comment scanner."""
 
-        triggers = ["+/u/" + self.bot_username.lower(), "+ircrbot"]
+        triggers = ["+/u/" + self.bot_username.lower(), "+ircrbot"] #MAGIC
 
         matching = [comment.body[:len(t)].lower() == t for t in triggers]
         if any(matching):

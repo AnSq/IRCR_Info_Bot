@@ -12,13 +12,13 @@ SUBREDDIT: isrconspiracyracist
 # that contains the configuration information in its first (and only) <code> block.
 WIKI_CONFIG_PAGE: ircr_info_bot_config
 
-# If using a SQLITE database (the default), the file to store it in
+# If using a SQLite database (the default), the file to store it in
 SQLITE_FILE: database.sqlite
 
 # User to log in and post comments as
 MAIN_USER: IRCR_Info_Bot
 
-# Map of user names to OAuth credential files (in PRAW-OAuth2Util format)
+# Map of user names to OAuth credential files (in praw-OAuth2Util format)
 USERS:
     IRCR_Info_Bot: IRCR_Info_Bot.oauth.ini
 ...
