@@ -1,3 +1,7 @@
+# old files
+manual.py
+get_mod_list.py
+
 # generated file for initializing users table in db
 insert.py
 
@@ -6,6 +10,7 @@ auth.py
 oauth.txt
 oauth.ini
 *.oauth.ini
+!oauth_example.oauth.ini
 
 # persistent storage
 *.pickle

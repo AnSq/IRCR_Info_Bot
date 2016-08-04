@@ -1,0 +1,85 @@
+### Only the first &lt;code&gt; tag is parsed, so be sure to include four spaces before each line (in addition to any other spaces needed for indentation). Currently, the bot needs to be restarted for changes here to take effect.
+
+    %YAML 1.1
+    ---
+    # remark that every valid user gets.
+    # These variables will be automatically replaced with their corresponding values
+    #     {username}    : username
+    #     {age}         : account age, for example, "2y 8m 20d" for 2 years, 8 months, and 20 days
+    #     {karma}       : account karma, for example, 277/12.4k for 277 link karma and 12400 comment karma
+    #     {prevcount}   : number of previous mentions of this user (or their aliases) in the database
+    #     {searchquery} : a query for reddit's search engine to get a list of previous mentions, including aliases
+    NORMALSTRING: ": Age: {age} | Karma: {karma} | [{prevcount} previous posts](https://www.reddit.com/search?q={searchquery}&sort=relevance&t=all) | [Redective](http://www.redective.com/?r=e&a=search&s=user&t=redective&q={username}) | [RedditGraphs](http://www.roadtolarissa.com/redditgraphs/?{username}&PieChart&Number&Comments) | [SnoopSnoo](http://snoopsnoo.com/u/{username})"
+
+    # extra remark that mods of subs in SPECIAL_MOD_SUBS get.
+    # Variables:
+    #     {sublist} : a list of modded subs (e.g., "/r/pics, /r/funny, and /r/conspiracy")
+    MOD_REMARK: " | Moderator of {sublist}"
+
+    # remark for accounts which are invalid (ie, deleted, suspended, or shadowbanned)
+    # Variables (see NORMALSTRING):
+    #     {username}
+    #     {prevcount}
+    DEADUSER: ": [{prevcount} previous posts](http://www.reddit.com/r/isrconspiracyracist/search?q=%2Fu%2F{username}&restrict_sr=on&sort=relevance&t=all) | Account deleted, suspended, or shadowbanned"
+
+
+    # A list of alias lists. Each account in the sublist is the same person.
+    # The first name of an alias list will be the "normal" name (used in SPECIALS, for example).
+    ALIASES:
+        -
+            - user1_alias1
+            - u1a2
+            - u1a3
+            - this_is_user1
+            - user1_alt
+
+        -
+            - user2
+            - alt_of_user2
+
+        - # comments can be useful here
+            - user3
+            - u3a2
+            - another_u3_alt
+
+
+    # This will be at the very top of the comment.
+    HEADER: "More information about these users:"
+
+    # This will follow the header if there is more than one user (for collapsible comments).
+    COLLAPSIBLE_HEADER: "\n\n#####&#009;\n\n######&#009;\n\n####&#009;"
+
+    # This will precede the footer if there is more than one user (for collapsible comments).
+    COLLAPSIBLE_FOOTER: "\n\n####&#009;\n\n#####&#009;\n\n###&#009;"
+
+    # This will be at the very bottom of the comment.
+    FOOTER: "\n\n*This would be a good place to put a link to the source code and contact information.*"
+
+
+    # Map of special users to their extra remark.
+    # Automatically works for any alias when the key is the "normal" name (first name in alias list)
+    # Variables:
+    #     {username}
+    SPECIALS:
+        user4: " | Something about /u/user4 here."
+        user2: " | This will also work for /u/alt_of_user2 (from ALIASES). It doesn't work the other way around though. The key here has to be the *first* item in the alias list."
+        user5: " | Something about /u/user5 here."
+
+
+    # Mods of these subs will get an extra remark (MOD_REMARK).
+    SPECIAL_MOD_SUBS:
+        - sub1
+        - sub2
+        - subreddit_c
+        - sub4
+
+
+    # distinguish comments when bot is a moderator
+    DISTINGUISHCOMMENT: true
+
+    # number of seconds to wait between scans
+    WAIT: 30
+
+    # posts to scan at a time
+    MAXPOSTS: 25
+    ...
